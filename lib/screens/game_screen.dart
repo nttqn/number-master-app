@@ -29,6 +29,14 @@ class _GameScreenState extends State<GameScreen> {
   BannerAd? _bannerAd;
   bool _bannerLoaded = false;
 
+  // Distance-based rather than velocity-based: a slow deliberate drag on a
+  // real touchscreen often doesn't reach a velocity threshold, which made
+  // this feel unresponsive on-device even though it worked fine with a
+  // mouse. Any drag past a small distance now changes lane, regardless of
+  // speed; a single long drag can cross multiple lanes.
+  double _dragAccumDx = 0;
+  static const double _laneChangeDragThreshold = 28.0;
+
   @override
   void initState() {
     super.initState();
@@ -96,12 +104,15 @@ class _GameScreenState extends State<GameScreen> {
                 children: [
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onHorizontalDragEnd: (details) {
-                      final v = details.primaryVelocity ?? 0;
-                      if (v > 200) {
+                    onHorizontalDragStart: (_) => _dragAccumDx = 0,
+                    onHorizontalDragUpdate: (details) {
+                      _dragAccumDx += details.delta.dx;
+                      if (_dragAccumDx > _laneChangeDragThreshold) {
                         _game.movePlayerLane(1);
-                      } else if (v < -200) {
+                        _dragAccumDx = 0;
+                      } else if (_dragAccumDx < -_laneChangeDragThreshold) {
                         _game.movePlayerLane(-1);
+                        _dragAccumDx = 0;
                       }
                     },
                     child: GameWidget(
