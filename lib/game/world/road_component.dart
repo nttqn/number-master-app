@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
+import '../../theme/palette.dart';
 import '../number_master_game.dart';
 
 /// Draws the converging 3-lane road by sampling the same [Projection] used
@@ -14,7 +15,7 @@ class RoadComponent extends PositionComponent with HasGameReference<NumberMaster
   @override
   void render(Canvas canvas) {
     final size = game.size;
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), Paint()..color = const Color(0xFF0F172A));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), Paint()..color = AppPalette.background);
 
     final p = game.projection;
 
@@ -31,10 +32,10 @@ class RoadComponent extends PositionComponent with HasGameReference<NumberMaster
       roadPath.lineTo(o.dx, o.dy);
     }
     roadPath.close();
-    canvas.drawPath(roadPath, Paint()..color = const Color(0xFF334155));
+    canvas.drawPath(roadPath, Paint()..color = AppPalette.roadSurface);
 
     final dividerPaint = Paint()
-      ..color = const Color(0x59FFFFFF)
+      ..color = AppPalette.laneDivider
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
     for (final laneOffset in [-0.5, 0.5]) {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/palette.dart';
+
 /// Reusable "LEVEL N" zoom-in / hold / zoom-out announcement, ~2s
 /// choreography, matching the pattern used across this game series.
 class LevelBannerOverlay extends StatefulWidget {
@@ -54,7 +56,7 @@ class _LevelBannerOverlayState extends State<LevelBannerOverlay> with SingleTick
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black45,
+      color: AppPalette.overlayScrimLight,
       child: Center(
         child: AnimatedBuilder(
           animation: _controller,

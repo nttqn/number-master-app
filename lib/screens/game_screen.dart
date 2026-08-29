@@ -7,6 +7,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../game/number_master_game.dart';
 import '../services/ads_service.dart';
 import '../services/save_service.dart';
+import '../theme/palette.dart';
 import '../widgets/game_over_overlay.dart';
 import '../widgets/hud_overlay.dart';
 import '../widgets/level_banner_overlay.dart';
@@ -95,7 +96,7 @@ class _GameScreenState extends State<GameScreen> {
         _game.pauseForBackButton();
       },
       child: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: AppPalette.background,
         body: Column(
           children: [
             Expanded(

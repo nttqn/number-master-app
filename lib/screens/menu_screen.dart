@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/save_service.dart';
 import '../services/sound_service.dart';
+import '../theme/palette.dart';
 import 'game_screen.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _MenuScreenState extends State<MenuScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: AppPalette.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),

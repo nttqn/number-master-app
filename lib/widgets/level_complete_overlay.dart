@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../game/number_master_game.dart';
+import '../theme/palette.dart';
 
 class LevelCompleteOverlay extends StatelessWidget {
   const LevelCompleteOverlay({super.key, required this.game});
@@ -10,7 +11,7 @@ class LevelCompleteOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black87,
+      color: AppPalette.overlayScrim,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

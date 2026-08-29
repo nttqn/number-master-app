@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../game/number_master_game.dart';
 import '../services/sound_service.dart';
+import '../theme/palette.dart';
 
 class PauseOverlay extends StatelessWidget {
   const PauseOverlay({super.key, required this.game});
@@ -11,7 +12,7 @@ class PauseOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black54,
+      color: AppPalette.overlayScrim,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
