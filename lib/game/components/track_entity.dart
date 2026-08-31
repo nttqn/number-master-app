@@ -70,4 +70,52 @@ abstract class TrackEntity extends PositionComponent
     )..layout(maxWidth: size.x * 1.4);
     tp.paint(canvas, Offset(size.x / 2 - tp.width / 2, size.y / 2 - tp.height / 2));
   }
+
+  /// Plain bold number with a white outline, no background shape — matches
+  /// the reference game's on-track number style (as opposed to the boxed
+  /// badge look [paintCenteredLabel] still uses for walls).
+  void paintOutlinedNumber(Canvas canvas, String text, Color color, {double scale = 0.52}) {
+    if (size.x < 6) return;
+    final fontSize = size.x * scale;
+    final style = TextStyle(fontSize: fontSize, fontWeight: FontWeight.w900);
+    final strokePainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: style.copyWith(
+          foreground: Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = fontSize * 0.16
+            ..color = const Color(0xFFFFFFFF),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final fillPainter = TextPainter(
+      text: TextSpan(text: text, style: style.copyWith(color: color)),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final offset = Offset(size.x / 2 - fillPainter.width / 2, size.y / 2 - fillPainter.height / 2);
+    strokePainter.paint(canvas, offset);
+    fillPainter.paint(canvas, offset);
+  }
+
+  /// Small flag glyph drawn above a threatening (enemy-colored) number,
+  /// matching the reference's "marked as danger" cue.
+  void paintFlag(Canvas canvas) {
+    if (size.x < 6) return;
+    final poleX = size.x / 2;
+    final poleTop = -size.y * 0.28;
+    final poleBottom = -size.y * 0.02;
+    final polePaint = Paint()
+      ..color = const Color(0xFF7A2E38)
+      ..strokeWidth = size.x * 0.05
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(Offset(poleX, poleTop), Offset(poleX, poleBottom), polePaint);
+    final flagPath = Path()
+      ..moveTo(poleX, poleTop)
+      ..lineTo(poleX + size.x * 0.26, poleTop + size.y * 0.07)
+      ..lineTo(poleX, poleTop + size.y * 0.14)
+      ..close();
+    canvas.drawPath(flagPath, Paint()..color = const Color(0xFFE0293E));
+  }
 }

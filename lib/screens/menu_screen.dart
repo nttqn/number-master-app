@@ -4,6 +4,7 @@ import '../services/save_service.dart';
 import '../services/sound_service.dart';
 import '../theme/palette.dart';
 import 'game_screen.dart';
+import 'shop_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -32,6 +33,20 @@ class _MenuScreenState extends State<MenuScreen> {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ValueListenableBuilder<int>(
+                    valueListenable: SaveService.instance.coinsNotifier,
+                    builder: (context, coins, _) => Row(
+                      children: [
+                        const Icon(Icons.attach_money, color: Colors.amberAccent, size: 22),
+                        Text('$coins', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               const Spacer(),
               const Text(
                 'NUMBER MASTER',
@@ -49,6 +64,15 @@ class _MenuScreenState extends State<MenuScreen> {
                 ),
                 style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16)),
                 child: Text('PLAY  (Level $_unlockedLevel)', style: const TextStyle(fontSize: 18)),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ShopScreen()),
+                ),
+                style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
+                icon: const Icon(Icons.storefront),
+                label: const Text('SHOP'),
               ),
               const SizedBox(height: 16),
               ValueListenableBuilder<bool>(

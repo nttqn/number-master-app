@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import '../../theme/palette.dart';
 import 'player_component.dart';
 import 'track_entity.dart';
 
@@ -30,8 +31,12 @@ class LooseNumberComponent extends TrackEntity {
   @override
   void render(Canvas canvas) {
     if (size.x < 4) return;
-    final center = Offset(size.x / 2, size.y / 2);
-    canvas.drawCircle(center, size.x / 2, Paint()..color = const Color(0xFFF59E0B));
-    paintCenteredLabel(canvas, '$value');
+    // Colored live against the player's *current* number rather than fixed
+    // at spawn time — matches the reference's red(danger)/blue(safe) cue
+    // and doubles as real-time feedback as the player's number changes.
+    final isSafe = value < game.player.number;
+    final color = isSafe ? AppPalette.friendlyNumber : AppPalette.enemyNumber;
+    if (!isSafe) paintFlag(canvas);
+    paintOutlinedNumber(canvas, '$value', color);
   }
 }

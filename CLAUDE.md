@@ -58,6 +58,60 @@ ever looking at it rendered.
    can't block the rest of the loop either. This is *the* reason
    `SoundService` must never be awaited on the critical startup path.
 
+## Visual restyle + shop economy (2026-08-29, second session)
+
+The user shared a screenshot of a similar competitor game and asked to
+match it more closely. Three changes landed:
+
+1. **Brighter, plain-text visual style** (`lib/theme/palette.dart`): sky
+   gradient + white/light-gray striped road instead of dark navy; gates and
+   loose numbers render as plain bold outlined text (`TrackEntity.
+   paintOutlinedNumber`) instead of colored badge/circle shapes, with a
+   small flag icon (`TrackEntity.paintFlag`) on anything red/dangerous.
+   `LooseNumberComponent` now picks its color **live against the player's
+   current number each frame** (`value < game.player.number`) rather than a
+   fixed color decided at spawn — this is more than cosmetic: it gives the
+   player real-time visual feedback as their number grows past a
+   previously-dangerous number. Walls kept their filled-badge look
+   (recolored pink/magenta) since the reference screenshot's finish-line
+   wall panel does too — only the *mid-track* numbers dropped their
+   background shape.
+2. **Walls visible from the start**: `LevelRuntime`'s constructor now
+   spawns every `WallComponent` immediately (at their true, large
+   `wall.distance`), instead of only once normal rows finish. This works
+   for free because a wall's screen position/scale is a pure function of
+   `wall.distance - traveled` regardless of when it was added — spawning it
+   early just means it renders tiny near the horizon from frame one, like a
+   visible finish line, while its actual *resolution* timing (when
+   `resolveWall` fires) is unaffected, still correctly gated by `depth`
+   reaching `resolveDistance`.
+3. **Shop/economy system** (new): `lib/game/economy.dart` holds pure
+   cost/effect curves (`startNumberCost`, `incomeCost`, `startNumberBonus`,
+   `incomeMultiplier`, `coinsForRun`) with their own `test/economy_test.dart`.
+   `SaveService` gained a coins balance + two upgrade levels
+   (`startNumberLevelNotifier`, `incomeLevelNotifier`), loaded once via
+   `loadEconomy()` (fired unawaited from `main()`, same non-blocking pattern
+   as sound/ads) and cached in `ValueNotifier`s so the rest of the app reads
+   them synchronously rather than threading `Future`s through the game-start
+   path. Coins are awarded on **every** finished run, win or lose
+   (`GameScreen`'s `onGameOver`/`onLevelComplete` callbacks) — losing still
+   pays out partial progress, matching the genre's usual "always earn
+   something" design. `NumberMasterGame.startNumberBonus` adds to the
+   player's starting number; this is safe against the level generator's own
+   fairness/feasibility math (which always assumes a start of 1) because a
+   *higher* start can only make a level easier, never invalidate the
+   "beatable" guarantee computed for the conservative baseline.
+
+**Also fixed while in this area**: the player's circle could clip off the
+left/right edge of the screen in the outer lanes on a normal phone-width
+viewport — `Projection.laneSpreadFraction` (fraction of screen width
+between the outer lanes) was too aggressive (0.42) relative to the fixed
+104px player size; dropped to 0.25 after empirically verifying via
+screenshots that outer lanes stay fully on-screen (the exact math threading
+`laneSpreadFraction`/`screenWidth`/player radius together didn't match
+observed clipping as cleanly as expected — trust the screenshot over the
+arithmetic here if they ever disagree again).
+
 ## Testing this app with a headless browser (Playwright) in a sandboxed environment
 
 Two non-obvious things ate a lot of debugging time here — save the next

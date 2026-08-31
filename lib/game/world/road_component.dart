@@ -8,14 +8,22 @@ import '../number_master_game.dart';
 /// Draws the converging 3-lane road by sampling the same [Projection] used
 /// for every entity at a handful of reference distances and connecting the
 /// points — this is what makes the road's edges/dividers curve in a way
-/// that visually matches how entities approach along them.
+/// that visually matches how entities approach along them. The road
+/// surface is banded with alternating light stripes (rather than a single
+/// flat fill) for a bit of texture/depth cue as it recedes.
 class RoadComponent extends PositionComponent with HasGameReference<NumberMasterGame> {
   static const List<double> _samples = [500, 250, 130, 70, 40, 22, 12, 6, 2, 0];
 
   @override
   void render(Canvas canvas) {
     final size = game.size;
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), Paint()..color = AppPalette.background);
+    final skyPaint = Paint()
+      ..shader = Gradient.linear(
+        Offset(size.x / 2, 0),
+        Offset(size.x / 2, size.y),
+        [AppPalette.skyTop, AppPalette.skyBottom],
+      );
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), skyPaint);
 
     final p = game.projection;
 
@@ -24,15 +32,15 @@ class RoadComponent extends PositionComponent with HasGameReference<NumberMaster
     final leftEdge = _samples.map((d) => pt(-1.6, d)).toList();
     final rightEdge = _samples.map((d) => pt(1.6, d)).toList();
 
-    final roadPath = Path()..moveTo(leftEdge.first.dx, leftEdge.first.dy);
-    for (final o in leftEdge.skip(1)) {
-      roadPath.lineTo(o.dx, o.dy);
+    for (int i = 0; i < _samples.length - 1; i++) {
+      final band = Path()
+        ..moveTo(leftEdge[i].dx, leftEdge[i].dy)
+        ..lineTo(rightEdge[i].dx, rightEdge[i].dy)
+        ..lineTo(rightEdge[i + 1].dx, rightEdge[i + 1].dy)
+        ..lineTo(leftEdge[i + 1].dx, leftEdge[i + 1].dy)
+        ..close();
+      canvas.drawPath(band, Paint()..color = i.isEven ? AppPalette.roadSurface : AppPalette.roadStripe);
     }
-    for (final o in rightEdge.reversed) {
-      roadPath.lineTo(o.dx, o.dy);
-    }
-    roadPath.close();
-    canvas.drawPath(roadPath, Paint()..color = AppPalette.roadSurface);
 
     final dividerPaint = Paint()
       ..color = AppPalette.laneDivider

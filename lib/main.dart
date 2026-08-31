@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'app.dart';
 import 'services/ads_service.dart';
+import 'services/save_service.dart';
 import 'services/sound_service.dart';
 
 Future<void> main() async {
@@ -15,5 +16,6 @@ Future<void> main() async {
   // rendering. Sound finishes loading in the background whenever it does;
   // SoundService.play() no-ops safely until then.
   unawaited(SoundService.instance.init());
+  unawaited(SaveService.instance.loadEconomy());
   runApp(const NumberMasterApp());
 }

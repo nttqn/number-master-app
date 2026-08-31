@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../game/game_state.dart';
 import '../game/number_master_game.dart';
+import '../services/save_service.dart';
 
 /// Always-on HUD (player number, level/wall-progress label, pause button)
 /// — a plain Flutter widget stacked over the GameWidget rather than a
@@ -57,7 +58,18 @@ class HudOverlay extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 40),
+            ValueListenableBuilder<int>(
+              valueListenable: SaveService.instance.coinsNotifier,
+              builder: (context, coins, _) => Row(
+                children: [
+                  const Icon(Icons.attach_money, color: Colors.amberAccent, size: 20),
+                  Text(
+                    '$coins',
+                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

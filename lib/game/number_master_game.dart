@@ -21,6 +21,7 @@ class NumberMasterGame extends FlameGame {
   NumberMasterGame({
     required this.level,
     this.seed,
+    this.startNumberBonus = 0,
     required this.onGameOver,
     required this.onLevelComplete,
     required this.onRequestRetry,
@@ -30,6 +31,14 @@ class NumberMasterGame extends FlameGame {
 
   final int level;
   final int? seed;
+
+  /// From the shop's "Start Number" upgrade — added to the player's
+  /// starting number (normally 1) at the beginning of every run. Purely a
+  /// head start: the level generator's own fairness/feasibility math
+  /// always assumes a start of 1, which stays a valid (conservative) lower
+  /// bound regardless of this bonus — a higher start can only make a level
+  /// easier, never invalidate the guarantee that it's beatable.
+  final int startNumberBonus;
   final void Function(int level, int finalNumber) onGameOver;
   final void Function(int level, int leftoverNumber) onLevelComplete;
   final VoidCallback onRequestRetry;
@@ -71,9 +80,9 @@ class NumberMasterGame extends FlameGame {
     generatedLevel = LevelGenerator.generate(level, seed: seed);
     trackSpeed = generatedLevel!.trackSpeed;
     runtime = LevelRuntime(this, generatedLevel!);
-    player.number = 1;
+    player.number = 1 + startNumberBonus;
     player.currentLane = 1;
-    numberNotifier.value = 1;
+    numberNotifier.value = player.number;
     wallsRemainingNotifier.value = generatedLevel!.walls.length;
     stateNotifier.value = GameState.levelIntro;
     overlays.add('levelIntro');

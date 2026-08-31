@@ -19,7 +19,7 @@ class Projection {
     this.horizonFraction = 0.30,
     this.groundFraction = 0.86,
     this.cameraDepth = 7.0,
-    this.laneSpreadFraction = 0.42,
+    this.laneSpreadFraction = 0.25,
     this.minRenderScale = 0.06,
   });
 

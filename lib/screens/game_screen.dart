@@ -51,13 +51,16 @@ class _GameScreenState extends State<GameScreen> {
   NumberMasterGame _buildGame() {
     return NumberMasterGame(
       level: _level,
+      startNumberBonus: SaveService.instance.startNumberBonus,
       onGameOver: (level, finalNumber) {
         unawaited(SaveService.instance.recordBestNumber(level, finalNumber));
+        unawaited(SaveService.instance.awardCoins(finalNumber));
         AdsService.instance.maybeShowInterstitial();
       },
       onLevelComplete: (level, leftover) {
         unawaited(SaveService.instance.recordBestNumber(level, leftover));
         unawaited(SaveService.instance.unlockLevel(level + 1));
+        unawaited(SaveService.instance.awardCoins(leftover));
         AdsService.instance.maybeShowInterstitial();
       },
       onRequestRetry: _retry,

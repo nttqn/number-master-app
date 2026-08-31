@@ -3,6 +3,7 @@ import 'dart:ui' hide TextStyle;
 import 'package:flame/components.dart';
 import 'package:flutter/painting.dart' show TextPainter, TextSpan, TextStyle, FontWeight;
 
+import '../../theme/palette.dart';
 import '../number_master_game.dart';
 
 /// A full-width wall at the end of a level, not scoped to a single lane —
@@ -46,7 +47,7 @@ class WallComponent extends PositionComponent with HasGameReference<NumberMaster
   @override
   void render(Canvas canvas) {
     if (size.x < 4) return;
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), Paint()..color = const Color(0xFF7C3AED));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), Paint()..color = AppPalette.wallFill);
     final tp = TextPainter(
       text: TextSpan(
         text: '$value',

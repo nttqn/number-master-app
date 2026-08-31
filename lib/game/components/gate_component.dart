@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import '../../models/gate_operation.dart';
+import '../../theme/palette.dart';
 import 'player_component.dart';
 import 'track_entity.dart';
 
@@ -31,12 +32,8 @@ class GateComponent extends TrackEntity {
   @override
   void render(Canvas canvas) {
     if (size.x < 4) return;
-    final color = op.isBeneficialColor ? const Color(0xFF3B82F6) : const Color(0xFFEF4444);
-    final rect = Rect.fromLTWH(0, 0, size.x, size.y * 1.6);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, Radius.circular(size.x * 0.18)),
-      Paint()..color = color,
-    );
-    paintCenteredLabel(canvas, op.label(value));
+    final color = op.isBeneficialColor ? AppPalette.friendlyNumber : AppPalette.enemyNumber;
+    if (!op.isBeneficialColor) paintFlag(canvas);
+    paintOutlinedNumber(canvas, op.label(value), color);
   }
 }

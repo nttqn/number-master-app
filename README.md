@@ -16,14 +16,17 @@ lib/
   services/
     ads_service.dart            # AdMob banner + interstitial (test IDs — see below)
     sound_service.dart          # flame_audio AudioPool wrapper, safe with missing WAVs
-    save_service.dart           # shared_preferences: unlocked level, best number per level
+    save_service.dart           # shared_preferences: unlocked level, best number, coins + upgrade levels
   screens/
-    menu_screen.dart, game_screen.dart
+    menu_screen.dart, game_screen.dart, shop_screen.dart
   widgets/                      # Overlays: level banner, pause, game-over, level-complete, HUD
+  theme/
+    palette.dart                 # Shared colors (sky/road/number/overlay tones)
   game/
     number_master_game.dart     # FlameGame — owns state machine, player, callbacks
     projection.dart              # Pure 2.5D perspective math (distance -> screen pos/scale)
     level_runtime.dart           # Spawns entities from a GeneratedLevel as they enter view
+    economy.dart                  # Pure cost/effect curves for shop upgrades + coin reward
     game_state.dart
     world/                       # RoadComponent (perspective road rendering)
     components/                  # PlayerComponent, TrackEntity + Gate/LooseNumber/Hazard/Wall
@@ -31,6 +34,7 @@ lib/
 test/
   projection_test.dart           # Unit tests for the perspective math
   level_generator_test.dart      # Unit tests: fairness + wall-feasibility invariants per level
+  economy_test.dart              # Unit tests for the shop cost/effect curves
 tool/
   patch_signing.js               # CI: wires release signingConfig into build.gradle(.kts)
   proguard-rules-extra.pro       # CI: R8 keep-rule for WorkManager (see below)
@@ -63,6 +67,13 @@ signing).
   wall-feasibility check (a worst-case playthrough is simulated to size the
   wall sequence, so a level is never unbeatable) — both enforced *during*
   generation and covered by `test/level_generator_test.dart`.
+- **Shop / economy**: every finished run (win or lose) earns coins based on
+  the final number reached (`Economy.coinsForRun`, `lib/game/economy.dart`).
+  Coins buy two persistent upgrades from the Shop screen: **Start Number**
+  (raises the number you begin every run with) and **Income** (multiplies
+  coins earned per run). Cost/effect curves live in `Economy`; balances and
+  upgrade levels persist via `SaveService` (loaded once at startup, cached
+  in memory afterward — see `SaveService.loadEconomy`).
 
 ## Quick local preview (no Android SDK needed)
 
