@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../game/number_master_game.dart';
+import '../screens/shop_screen.dart';
 import '../services/sound_service.dart';
 import '../theme/palette.dart';
 
@@ -20,6 +21,15 @@ class PauseOverlay extends StatelessWidget {
             const Text('PAUSED', style: TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)),
             const SizedBox(height: 24),
             ElevatedButton(onPressed: game.resumeFromPause, child: const Text('Resume')),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ShopScreen()),
+              ),
+              style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
+              icon: const Icon(Icons.storefront),
+              label: const Text('Shop'),
+            ),
             const SizedBox(height: 12),
             ValueListenableBuilder<bool>(
               valueListenable: SoundService.instance.enabledNotifier,

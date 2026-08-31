@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../game/game_state.dart';
 import '../game/number_master_game.dart';
+import '../screens/shop_screen.dart';
 import '../services/save_service.dart';
 
 /// Always-on HUD (player number, level/wall-progress label, pause button)
@@ -58,17 +59,31 @@ class HudOverlay extends StatelessWidget {
                 ],
               ),
             ),
-            ValueListenableBuilder<int>(
-              valueListenable: SaveService.instance.coinsNotifier,
-              builder: (context, coins, _) => Row(
-                children: [
-                  const Icon(Icons.attach_money, color: Colors.amberAccent, size: 20),
-                  Text(
-                    '$coins',
-                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                ValueListenableBuilder<int>(
+                  valueListenable: SaveService.instance.coinsNotifier,
+                  builder: (context, coins, _) => Row(
+                    children: [
+                      const Icon(Icons.attach_money, color: Colors.amberAccent, size: 20),
+                      Text(
+                        '$coins',
+                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.storefront, color: Colors.white, size: 24),
+                  onPressed: () {
+                    game.pauseForBackButton();
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ShopScreen()));
+                  },
+                ),
+              ],
             ),
           ],
         ),

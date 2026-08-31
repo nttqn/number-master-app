@@ -291,7 +291,11 @@ class LevelGenerator {
     double runLength,
   ) {
     final n = p.wallSequenceLength;
-    final bias = (p.level / 25.0).clamp(0.15, 0.6);
+    // Higher floor/ceiling than before (was 0.15..0.6): walls now eat
+    // further into a worst-case run even at level 1, so clearing them
+    // takes real margin from good lane choices rather than always leaving
+    // a trivial leftover.
+    final bias = (p.level / 20.0).clamp(0.3, 0.8);
     final budget = worstCase * 0.7 + (bestCase * 0.9 - worstCase * 0.7) * bias;
 
     final walls = <WallSpec>[];

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../game/economy.dart';
 import '../game/number_master_game.dart';
+import '../screens/shop_screen.dart';
 import '../services/save_service.dart';
 import '../theme/palette.dart';
 
@@ -34,6 +35,15 @@ class LevelCompleteOverlay extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             ElevatedButton(onPressed: game.onRequestNextLevel, child: const Text('Next Level')),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ShopScreen()),
+              ),
+              style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
+              icon: const Icon(Icons.storefront),
+              label: const Text('Shop'),
+            ),
             const SizedBox(height: 12),
             TextButton(
               onPressed: game.onRequestQuit,

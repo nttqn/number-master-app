@@ -19,14 +19,18 @@ class DifficultyParams {
   });
 
   factory DifficultyParams.forLevel(int level) {
-    final rowCount = min(12 + level * 2, 40);
-    final gateLow = 1 + level;
-    final gateHigh = 3 + level * 2;
+    final rowCount = min(14 + level * 2, 44);
+    final gateLow = 2 + level;
+    final gateHigh = 5 + level * 2;
 
-    final multiplyW = ((level - 3) * 0.08).clamp(0.0, 0.35);
-    final divideW = ((level - 7) * 0.06).clamp(0.0, 0.25);
+    // Multiply/divide ramp in sooner and cap higher than before — the old
+    // curve left the first several levels as pure add/subtract, which
+    // (combined with subtract always clamping harmlessly to 1 this early)
+    // made early levels feel like a non-event.
+    final multiplyW = ((level - 2) * 0.09).clamp(0.0, 0.4);
+    final divideW = ((level - 5) * 0.07).clamp(0.0, 0.3);
     const subtractW = 0.25;
-    final addW = max(0.15, 1.0 - multiplyW - divideW - subtractW);
+    final addW = max(0.1, 1.0 - multiplyW - divideW - subtractW);
 
     return DifficultyParams._(
       level: level,
@@ -39,10 +43,10 @@ class DifficultyParams {
         GateOperation.multiply: multiplyW,
         GateOperation.divide: divideW,
       },
-      hazardDensity: (0.10 + level * 0.02).clamp(0.10, 0.40),
-      looseNumberDensity: (0.15 + level * 0.015).clamp(0.15, 0.35),
-      trackSpeed: 6.0 + min(level * 0.3, 6.0),
-      wallSequenceLength: min(3 + level ~/ 3, 8),
+      hazardDensity: (0.18 + level * 0.025).clamp(0.18, 0.5),
+      looseNumberDensity: (0.20 + level * 0.02).clamp(0.20, 0.4),
+      trackSpeed: 7.0 + min(level * 0.35, 7.0),
+      wallSequenceLength: min(3 + level ~/ 3, 9),
     );
   }
 
