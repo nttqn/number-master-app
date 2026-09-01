@@ -2,15 +2,17 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
+import '../../models/lane.dart';
 import '../../theme/palette.dart';
 import '../number_master_game.dart';
 
-/// Draws the converging 3-lane road by sampling the same [Projection] used
-/// for every entity at a handful of reference distances and connecting the
-/// points — this is what makes the road's edges/dividers curve in a way
-/// that visually matches how entities approach along them. The road
-/// surface is banded with alternating light stripes (rather than a single
-/// flat fill) for a bit of texture/depth cue as it recedes.
+/// Draws the converging kLaneCount-lane road by sampling the same
+/// [Projection] used for every entity at a handful of reference distances
+/// and connecting the points — this is what makes the road's edges/
+/// dividers curve in a way that visually matches how entities approach
+/// along them. The road surface is banded with alternating light stripes
+/// (rather than a single flat fill) for a bit of texture/depth cue as it
+/// recedes.
 class RoadComponent extends PositionComponent with HasGameReference<NumberMasterGame> {
   static const List<double> _samples = [500, 250, 130, 70, 40, 22, 12, 6, 2, 0];
 
@@ -46,7 +48,12 @@ class RoadComponent extends PositionComponent with HasGameReference<NumberMaster
       ..color = AppPalette.laneDivider
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
-    for (final laneOffset in [-0.5, 0.5]) {
+    // One divider between every pair of adjacent lanes — the midpoint of
+    // their normalized offsets, which works regardless of kLaneCount.
+    final dividerOffsets = [
+      for (int i = 0; i < kLaneCount - 1; i++) (i.laneOffset + (i + 1).laneOffset) / 2,
+    ];
+    for (final laneOffset in dividerOffsets) {
       final points = _samples.map((d) => pt(laneOffset, d)).toList();
       final path = Path()..moveTo(points.first.dx, points.first.dy);
       for (final o in points.skip(1)) {

@@ -15,9 +15,11 @@ import '../number_master_game.dart';
 class PlayerComponent extends PositionComponent with HasGameReference<NumberMasterGame> {
   PlayerComponent() : super(size: Vector2.all(baseSize), anchor: Anchor.center);
 
-  static const double baseSize = 104;
+  // Smaller than the 3-lane era's 104 — 5 narrower lanes need
+  // proportionally smaller entities to leave a visible gap between them.
+  static const double baseSize = 58;
 
-  int currentLane = 1;
+  int currentLane = (kLaneCount - 1) ~/ 2;
   int number = 1;
 
   @override

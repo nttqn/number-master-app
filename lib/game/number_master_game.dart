@@ -81,7 +81,7 @@ class NumberMasterGame extends FlameGame {
     trackSpeed = generatedLevel!.trackSpeed;
     runtime = LevelRuntime(this, generatedLevel!);
     player.number = 1 + startNumberBonus;
-    player.currentLane = 1;
+    player.currentLane = (kLaneCount - 1) ~/ 2;
     numberNotifier.value = player.number;
     wallsRemainingNotifier.value = generatedLevel!.walls.length;
     stateNotifier.value = GameState.levelIntro;

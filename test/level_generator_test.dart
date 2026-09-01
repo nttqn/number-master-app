@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:number_master/game/spawner/level_generator.dart';
 import 'package:number_master/game/spawner/spawn_row.dart';
+import 'package:number_master/models/lane.dart';
 
 /// Mirrors LevelGenerator's own worst-case simulation so the test can
 /// independently verify a generated level is actually beatable, rather
@@ -79,11 +80,11 @@ void main() {
       }
     });
 
-    test('level $level: no row has all 3 lanes hazardous', () {
+    test('level $level: no row has all lanes hazardous', () {
       final generated = LevelGenerator.generate(level);
       for (final row in generated.rows) {
         final hazardCount = row.lanes.whereType<HazardContent>().length;
-        expect(hazardCount, lessThan(3));
+        expect(hazardCount, lessThan(kLaneCount));
       }
     });
   }

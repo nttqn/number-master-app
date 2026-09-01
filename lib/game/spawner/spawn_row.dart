@@ -30,7 +30,7 @@ class SpawnRow {
   const SpawnRow({required this.distance, required this.lanes});
 
   final double distance;
-  final List<LaneContent?> lanes; // length 3: left, mid, right
+  final List<LaneContent?> lanes; // length kLaneCount, leftmost to rightmost
 }
 
 /// A single wall at the end of a level. Walls are full-width (not

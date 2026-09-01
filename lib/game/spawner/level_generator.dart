@@ -161,8 +161,8 @@ class LevelGenerator {
   }
 
   static void _fillHazardRow(List<LaneContent?> lanes, DifficultyParams p, Random rnd) {
-    final hazardLaneCount = rnd.nextBool() ? 1 : 2; // never all 3 (fairness)
-    final order = [0, 1, 2]..shuffle(rnd);
+    final hazardLaneCount = 1 + rnd.nextInt(kLaneCount - 1); // never all lanes (fairness)
+    final order = List.generate(kLaneCount, (i) => i)..shuffle(rnd);
     for (int i = 0; i < hazardLaneCount; i++) {
       lanes[order[i]] = const HazardContent();
     }
@@ -172,7 +172,7 @@ class LevelGenerator {
   }
 
   static void _fillNumberRow(List<LaneContent?> lanes, Random rnd, double currentWorst) {
-    final order = [0, 1, 2]..shuffle(rnd);
+    final order = List.generate(kLaneCount, (i) => i)..shuffle(rnd);
     final numberLaneCount = 1 + rnd.nextInt(kLaneCount);
     final canPlaceSafeNumber = currentWorst > 1; // a value must be strictly
     // smaller than currentWorst to be absorbable — at currentWorst<=1
@@ -210,8 +210,8 @@ class LevelGenerator {
   }
 
   static void _fillGateRow(List<LaneContent?> lanes, DifficultyParams p, Random rnd) {
-    final order = [0, 1, 2]..shuffle(rnd);
-    final gateLaneCount = 2 + rnd.nextInt(2); // 2 or 3 lanes get a gate
+    final order = List.generate(kLaneCount, (i) => i)..shuffle(rnd);
+    final gateLaneCount = 2 + rnd.nextInt(kLaneCount - 1); // 2..kLaneCount lanes get a gate
     for (int i = 0; i < gateLaneCount; i++) {
       lanes[order[i]] = _randomGate(p, rnd);
     }

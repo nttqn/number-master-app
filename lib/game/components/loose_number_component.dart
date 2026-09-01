@@ -12,7 +12,7 @@ class LooseNumberComponent extends TrackEntity {
     required this.value,
     required super.lane,
     required super.spawnDistance,
-  }) : super(baseSize: 78);
+  }) : super(baseSize: 44); // shrunk for 5 narrower lanes (was 78 for 3)
 
   final int value;
 

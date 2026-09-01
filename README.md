@@ -1,7 +1,7 @@
 # Number Master
 
 A Flutter + Flame clone of "Number Master: Run and Merge" (KAYAC, package
-`com.kayac.level_up_number`): a 3-lane runner where you carry a number,
+`com.kayac.level_up_number`): a 5-lane runner where you carry a number,
 grow it through math gates and loose numbers, dodge hazards, and break
 through a wall sequence at the end of each level. Levels are procedurally
 generated with a difficulty curve — not hand-authored — and every
@@ -50,7 +50,9 @@ signing).
 
 ## How the game works
 
-- **3 lanes**, swipe left/right to switch. The player's number starts at 1.
+- **5 lanes** (`kLaneCount` in `lib/models/lane.dart`), swipe left/right to
+  switch — a single deliberate drag moves one lane, a longer drag can cross
+  several. The player's number starts at 1.
 - **Math gates**: blue gates add/multiply your number, red gates
   subtract/divide (clamped to a minimum of 1). Different lanes usually
   offer different gates — the choice matters.

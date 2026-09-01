@@ -28,6 +28,42 @@ checks. `test/level_generator_test.dart` asserts both invariants across a
 spread of levels — always run this after touching the generator, before
 ever looking at it rendered.
 
+## 3 → 5 lanes (2026-08-29, third session)
+
+The user asked for more lanes. `kLaneCount` (`lib/models/lane.dart`) is the
+single source of truth — bumping it is *mostly* enough, but a few spots had
+baked in an assumption of exactly 3:
+
+- `LaneOffset.laneOffset` normalizes any lane index to **exactly ±1 for the
+  outermost lanes, regardless of `kLaneCount`**
+  (`(this - kOuterLaneOffset) / kOuterLaneOffset`). This is what let
+  `Projection` itself stay completely unchanged — it never needs to know
+  how many lanes there are, only the already-normalized offset.
+- `RoadComponent`'s outer edge margin (`±1.6` raw, i.e. "60% beyond the
+  outermost lane") also needed no change for the same reason. Only the
+  **lane dividers** did: they were hardcoded to exactly two (`[-0.5, 0.5]`),
+  now computed as the midpoint between every adjacent pair of lanes'
+  `laneOffset`s (`kLaneCount - 1` of them).
+- `LevelGenerator`'s three row-filling functions
+  (`_fillHazardRow`/`_fillNumberRow`/`_fillGateRow`) had `[0, 1, 2]..shuffle()`
+  and lane-count-shaped random ranges (`rnd.nextBool() ? 1 : 2`,
+  `2 + rnd.nextInt(2)`) hand-tuned for 3 — generalized to
+  `List.generate(kLaneCount, (i) => i)` and `kLaneCount`-relative
+  `rnd.nextInt(...)` ranges chosen so they reduce to the exact old behavior
+  when `kLaneCount == 3` (a useful sanity check while doing the rewrite).
+- Component `baseSize`s (player 104→58, gate 96→52, loose-number 78→44,
+  hazard 74→42) had to shrink — 5 lanes packed into roughly the same road
+  width means each lane is narrower, so entities sized for 3 lanes would
+  overlap their neighbors. `Projection.laneSpreadFraction` was also bumped
+  (0.25→0.32) to claim a bit more screen width for the road itself rather
+  than putting the entire size burden on shrinking entities. Verified via
+  Playwright screenshots at both outer lanes (no clipping) and a full
+  playthrough (number growth, wall sequence, all still correct) — the
+  fairness/feasibility test suite also needed no logic changes, just
+  updating one test's hardcoded `lessThan(3)` to `lessThan(kLaneCount)`.
+- Player/game start lane changed from hardcoded `1` to
+  `(kLaneCount - 1) ~/ 2` (still the middle lane, for any odd count).
+
 ## Bugs found and fixed during the initial build (2026-08-29)
 
 1. **`_fillNumberRow` currentWorst≤1 edge case**: at the very start of a

@@ -16,7 +16,7 @@ class GateComponent extends TrackEntity {
     required this.value,
     required super.lane,
     required super.spawnDistance,
-  }) : super(baseSize: 96);
+  }) : super(baseSize: 52); // shrunk for 5 narrower lanes (was 96 for 3)
 
   final GateOperation op;
   final int value;

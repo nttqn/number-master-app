@@ -1,5 +1,5 @@
 name: number_master
-description: "Number Master - a 3-lane runner where you grow your number through math gates and break walls at the finish."
+description: "Number Master - a 5-lane runner where you grow your number through math gates and break walls at the finish."
 publish_to: 'none'
 version: 1.0.0+1
 

@@ -7,7 +7,8 @@ import 'track_entity.dart';
 /// A non-numeric hazard (spinning saw) blocking a lane. Fatal on contact,
 /// no effect if the player is in a different lane when it resolves.
 class HazardComponent extends TrackEntity {
-  HazardComponent({required super.lane, required super.spawnDistance}) : super(baseSize: 74);
+  HazardComponent({required super.lane, required super.spawnDistance})
+    : super(baseSize: 42); // shrunk for 5 narrower lanes (was 74 for 3)
 
   double _spin = 0;
 
