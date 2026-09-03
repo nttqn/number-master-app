@@ -53,7 +53,8 @@ class _GameScreenState extends State<GameScreen> {
         unawaited(SaveService.instance.recordBestNumber(level, leftover));
         unawaited(SaveService.instance.unlockLevel(level + 1));
         unawaited(SaveService.instance.awardCoins(leftover));
-        AdsService.instance.maybeShowInterstitial();
+        // No interstitial here on purpose — only on game-over. Showing one
+        // after every single level-complete was too intrusive.
       },
       onRequestRetry: _retry,
       onRequestNextLevel: _nextLevel,
