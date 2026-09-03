@@ -28,6 +28,26 @@ checks. `test/level_generator_test.dart` asserts both invariants across a
 spread of levels — always run this after touching the generator, before
 ever looking at it rendered.
 
+## Controls: continuous drag-follow, not threshold-jump (2026-08-29, fourth session)
+
+User feedback from an actual phone: the player "doesn't move follow the
+touch point". The control before this was threshold-based — accumulate
+drag distance, jump one lane once it crosses ~28px — which is responsive
+but never actually tracks the finger, it just teleports between fixed
+lane centers. Replaced with direct 1:1 following:
+`PlayerComponent.followDrag(deltaX)` moves `position.x` by the raw drag
+delta every `onHorizontalDragUpdate`, clamped between the outermost lanes'
+x-positions, and recomputes `currentLane` continuously as "whichever lane
+center is nearest right now" (so collision/gate resolution always matches
+what's visually under the player, even mid-drag). `snapToNearestLane()`
+eases into the exact lane center on drag end/cancel. One easy-to-miss
+detail: `followDrag` must cancel any in-flight `MoveToEffect` first
+(`_cancelActiveMoveEffect`) — Flame effects mutate position every frame
+they're active, so a leftover snap animation from a previous release would
+otherwise fight direct position writes on the next drag. `GameScreen` lost
+its drag-accumulator entirely; `NumberMasterGame.movePlayerLane(delta)`
+was replaced by `handleDragUpdate(deltaX)`/`handleDragEnd()`.
+
 ## 3 → 5 lanes (2026-08-29, third session)
 
 The user asked for more lanes. `kLaneCount` (`lib/models/lane.dart`) is the

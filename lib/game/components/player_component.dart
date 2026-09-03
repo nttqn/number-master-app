@@ -8,10 +8,13 @@ import 'package:flutter/painting.dart' show TextPainter, TextSpan, TextStyle, Fo
 import '../../models/lane.dart';
 import '../number_master_game.dart';
 
-/// The player: fixed at the ground plane (distance 0), only its lane (x
-/// position) ever changes, via a tween triggered by swipe input. The
-/// player's number is purely a display/logic value here — [pulse] gives it
-/// a little visual feedback whenever it changes.
+/// The player: fixed at the ground plane (distance 0). Its x position
+/// follows the drag gesture 1:1 while the finger is down (clamped to the
+/// road's width) — [currentLane] is continuously recomputed as "whichever
+/// lane center is nearest right now", not just decided once per swipe —
+/// and on release it eases into that lane's exact center. The player's
+/// number is purely a display/logic value here — [pulse] gives it a little
+/// visual feedback whenever it changes.
 class PlayerComponent extends PositionComponent with HasGameReference<NumberMasterGame> {
   PlayerComponent() : super(size: Vector2.all(baseSize), anchor: Anchor.center);
 
@@ -33,17 +36,51 @@ class PlayerComponent extends PositionComponent with HasGameReference<NumberMast
     position = Vector2(p.screenXAt(currentLane.laneOffset, 0), p.groundY);
   }
 
-  void moveToLane(int lane) {
-    if (lane == currentLane || lane < 0 || lane >= kLaneCount) return;
-    currentLane = lane;
+  /// Shifts the player by [deltaX] screen pixels (a raw drag delta),
+  /// clamped to stay between the outermost lanes, and updates
+  /// [currentLane] to whichever lane is nearest to the new position.
+  void followDrag(double deltaX) {
+    _cancelActiveMoveEffect();
     final p = game.projection;
-    final targetX = p.screenXAt(lane.laneOffset, 0);
+    final minX = p.screenXAt(0.laneOffset, 0);
+    final maxX = p.screenXAt((kLaneCount - 1).laneOffset, 0);
+    final newX = (position.x + deltaX).clamp(minX, maxX);
+    position = Vector2(newX, position.y);
+    currentLane = _nearestLaneTo(newX);
+  }
+
+  /// Eases from wherever the finger left off into the exact center of
+  /// [currentLane] — call on drag end.
+  void snapToNearestLane() {
+    _cancelActiveMoveEffect();
+    final p = game.projection;
+    final targetX = p.screenXAt(currentLane.laneOffset, 0);
     add(
       MoveToEffect(
         Vector2(targetX, position.y),
-        EffectController(duration: 0.18, curve: Curves.easeOutCubic),
+        EffectController(duration: 0.12, curve: Curves.easeOutCubic),
       ),
     );
+  }
+
+  int _nearestLaneTo(double x) {
+    final p = game.projection;
+    int nearest = 0;
+    double bestDist = double.infinity;
+    for (int lane = 0; lane < kLaneCount; lane++) {
+      final dist = (x - p.screenXAt(lane.laneOffset, 0)).abs();
+      if (dist < bestDist) {
+        bestDist = dist;
+        nearest = lane;
+      }
+    }
+    return nearest;
+  }
+
+  void _cancelActiveMoveEffect() {
+    for (final effect in children.whereType<MoveToEffect>().toList()) {
+      effect.removeFromParent();
+    }
   }
 
   void pulse() {

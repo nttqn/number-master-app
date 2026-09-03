@@ -104,13 +104,24 @@ class NumberMasterGame extends FlameGame {
     }
   }
 
-  void movePlayerLane(int delta) {
-    if (stateNotifier.value != GameState.running && stateNotifier.value != GameState.wallSequence) return;
-    final target = (player.currentLane + delta).clamp(0, kLaneCount - 1);
-    if (target != player.currentLane) {
-      player.moveToLane(target);
+  bool get _canSteer => stateNotifier.value == GameState.running || stateNotifier.value == GameState.wallSequence;
+
+  /// Called continuously while a drag is in progress — the player follows
+  /// the finger 1:1 rather than jumping lanes once some threshold is
+  /// crossed.
+  void handleDragUpdate(double deltaX) {
+    if (!_canSteer) return;
+    final previousLane = player.currentLane;
+    player.followDrag(deltaX);
+    if (player.currentLane != previousLane) {
       SoundService.instance.play(SfxEvent.swipe);
     }
+  }
+
+  /// Called when the finger lifts — eases into the nearest lane's center.
+  void handleDragEnd() {
+    if (!_canSteer) return;
+    player.snapToNearestLane();
   }
 
   void applyGate(GateOperation op, int value) {
