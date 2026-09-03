@@ -1,27 +1,38 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:number_master/game/spawner/difficulty_params.dart';
 import 'package:number_master/game/spawner/level_generator.dart';
 import 'package:number_master/game/spawner/spawn_row.dart';
 import 'package:number_master/models/lane.dart';
 
 /// Mirrors LevelGenerator's own worst-case simulation so the test can
 /// independently verify a generated level is actually beatable, rather
-/// than trusting the generator's internal accounting.
+/// than trusting the generator's internal accounting. An idle/empty lane
+/// only counts as the worst-case outcome when it's the *only* survivable
+/// option in the row — otherwise it pins the simulation at the starting
+/// number forever, since an idle lane's "result" is always `current`.
 double _worstCaseStepForRow(double current, SpawnRow row) {
-  double? worst;
+  double? worstNonIdle;
+  bool hasIdleOption = false;
   for (final c in row.lanes) {
-    double? result;
     if (c == null) {
-      result = current;
-    } else if (c is GateContent) {
+      hasIdleOption = true;
+      continue;
+    }
+    double? result;
+    if (c is GateContent) {
       result = c.op.apply(current.round(), c.value).toDouble();
     } else if (c is LooseNumberContent) {
       result = c.value < current ? current + c.value : null;
     } else {
       result = null; // hazard
     }
-    if (result != null && (worst == null || result < worst)) worst = result;
+    if (result != null && (worstNonIdle == null || result < worstNonIdle)) {
+      worstNonIdle = result;
+    }
   }
-  return worst ?? current;
+  if (worstNonIdle != null) return worstNonIdle;
+  if (hasIdleOption) return current;
+  return current;
 }
 
 double _simulateWorstCase(List<SpawnRow> rows) {
@@ -86,6 +97,28 @@ void main() {
         final hazardCount = row.lanes.whereType<HazardContent>().length;
         expect(hazardCount, lessThan(kLaneCount));
       }
+    });
+
+    // Regression test for a real bug: the wall budget could target a total
+    // above what worst-case play could ever pay (since it blends toward
+    // bestCase, routinely far above worstCase), making feasibility
+    // structurally impossible — which silently exhausted every retry and
+    // fell back to the bland conservativeFallback preset (fixed 10 rows)
+    // for nearly every level, regardless of the level number requested.
+    // If this ever regresses, every level will quietly look identical
+    // again instead of following DifficultyParams.forLevel's own curve.
+    test('level $level: uses the real difficulty curve, not the fallback preset', () {
+      final generated = LevelGenerator.generate(level);
+      final expectedRowCount = DifficultyParams.forLevel(level).rowCount;
+      expect(
+        generated.rows.length,
+        expectedRowCount,
+        reason:
+            'level $level generated ${generated.rows.length} rows instead of the '
+            'expected $expectedRowCount — likely silently fell back to the '
+            'conservative/sanitized safety-net preset instead of using the '
+            'real per-level difficulty curve',
+      );
     });
   }
 

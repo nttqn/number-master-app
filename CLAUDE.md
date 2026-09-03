@@ -28,6 +28,73 @@ checks. `test/level_generator_test.dart` asserts both invariants across a
 spread of levels — always run this after touching the generator, before
 ever looking at it rendered.
 
+## The generator was silently using its own safety-net preset for almost every level (2026-08-29, fifth session)
+
+Reported symptom: a real playthrough reached level.number = 777,738,780 at
+level 11. The immediate cause (fixed first, worth keeping) was multiply
+gates sharing add/subtract's level-scaled value range — a single gate
+could be `x27`, and multiply compounds. But digging in with a throwaway
+probe test (`LevelGenerator.generate(level).rows.length` across a spread
+of levels) turned up something much bigger: **`generated.rows.length` was
+`10` — `conservativeFallback`'s hardcoded row count — for almost every
+level, regardless of which level was requested.** `generate()`'s 5+5
+retry attempts against the real per-level curve were failing every single
+time, silently landing on the last-resort sanitized safety-net preset.
+Levels had been visually similar/bland for most of this project's history
+because of this, not because of any deliberate design choice — it just
+never surfaced as an obvious bug because the safety net's whole job is to
+never let the game look broken.
+
+Two independent, compounding bugs, both in `level_generator.dart`:
+
+1. **`_worstCaseStepForRow` treated "do nothing" as a legitimate worst-case
+   choice.** An empty/idle lane's `_resultFor` always returns `current`
+   unchanged, and the fairness constraint guarantees *some* survivable
+   lane most rows (often specifically an empty one) — so the literal
+   minimum across all lanes pins the worst-case simulation at the
+   *starting* number (1) for the entire run, virtually every time. Fixed
+   by only falling through to "no change" when idling is the *only*
+   survivable option in a row — otherwise take the worst *real* (gate/
+   number) outcome. This is the kind of bug that's invisible from reading
+   the code in isolation; it only showed up by actually printing
+   `worstCase` and noticing it was always `1.0`.
+2. **The wall budget could target a total *larger than worstCase itself*.**
+   `budget = worstCase*0.7 + (bestCase*0.9 - worstCase*0.7)*bias` blends
+   toward `bestCase`, which is routinely far above `worstCase` (best play
+   vs. no-skill play) — so even a modest `bias` could push the target
+   budget past what worst-case play could ever pay. That makes feasibility
+   **structurally impossible**, independent of randomness: no matter how
+   the total gets split across walls, the sum can't fit under a ceiling
+   the target itself already exceeds. Fixed by clamping
+   `budget = min(rawBudget, worstCase * 0.9)`, and separately made the
+   per-wall split rebalance off *remaining* budget/walls each step
+   (`remainingBudget / wallsLeft`, tighter random-factor variance) instead
+   of a fixed `budget/n`, so early rounding noise can't starve the last
+   wall either.
+
+Fixing bug #1 alone wasn't enough — level 1 started succeeding on the real
+curve, but higher levels still fell back, because bug #2 was independently
+guaranteeing failure whenever `bestCase` diverged enough from `worstCase`
+(which gets more likely at higher levels/richer content). Needed a probe
+test targeting one specific level with debug prints
+(`allFair`/`worstCase`/`bestCase`/`wallFeasible`) to catch each bug in
+turn — `flutter test`'s pass/fail across the whole suite gave no signal
+here since the safety net always produces a *valid*, just plain and
+generically-difficulty level, and nothing was asserting that the actual
+per-level curve was the thing being used. `test/level_generator_test.dart`
+now has a permanent regression test for exactly that
+(`'uses the real difficulty curve, not the fallback preset'`, comparing
+`generated.rows.length` against `DifficultyParams.forLevel(level).rowCount`)
+so this class of bug can't silently regress again.
+
+Multiply/divide value fix, kept from the initial (narrower) diagnosis:
+`DifficultyParams` now has a separate `multiplyDivideValueRange`
+(small, slow-growing, capped at 6) instead of sharing `gateValueRange`
+with add/subtract, and `multiplyW`/`divideW` were both brought down
+significantly (was up to 0.4/0.3, now up to 0.12/0.1) — multiply/divide
+gates compound over a run's many rows, so both their frequency and their
+individual magnitude needed to stay modest.
+
 ## Controls: continuous drag-follow, not threshold-jump (2026-08-29, fourth session)
 
 User feedback from an actual phone: the player "doesn't move follow the

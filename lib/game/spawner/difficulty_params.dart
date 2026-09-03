@@ -11,6 +11,7 @@ class DifficultyParams {
     required this.rowCount,
     required this.rowSpacing,
     required this.gateValueRange,
+    required this.multiplyDivideValueRange,
     required this.opWeights,
     required this.hazardDensity,
     required this.looseNumberDensity,
@@ -23,20 +24,27 @@ class DifficultyParams {
     final gateLow = 2 + level;
     final gateHigh = 5 + level * 2;
 
-    // Multiply/divide ramp in sooner and cap higher than before — the old
-    // curve left the first several levels as pure add/subtract, which
-    // (combined with subtract always clamping harmlessly to 1 this early)
-    // made early levels feel like a non-event.
-    final multiplyW = ((level - 2) * 0.09).clamp(0.0, 0.4);
-    final divideW = ((level - 5) * 0.07).clamp(0.0, 0.3);
+    // Multiply/divide gates compound: with up to ~40 rows and several
+    // lanes each, even a modest per-gate chance of "multiply" adds up to
+    // many multiply hits in a single run, and multiplying by a
+    // level-scaled value (the same range add/subtract use) each time
+    // explodes exponentially — a real run reached level.number in the
+    // billions at level 11. Keep multiply/divide rare (small, slow-growing
+    // cap) and give their VALUES their own small, slow-growing range
+    // instead of sharing add/subtract's — a x2..x6 gate still meaningfully
+    // rewards good play without compounding into nonsense.
+    final multiplyW = ((level - 5) * 0.02).clamp(0.0, 0.12);
+    final divideW = ((level - 8) * 0.015).clamp(0.0, 0.1);
     const subtractW = 0.25;
-    final addW = max(0.1, 1.0 - multiplyW - divideW - subtractW);
+    final addW = max(0.4, 1.0 - multiplyW - divideW - subtractW);
+    final multiplyDivideHigh = min(3 + level ~/ 8, 6);
 
     return DifficultyParams._(
       level: level,
       rowCount: rowCount,
       rowSpacing: 10.0,
       gateValueRange: (gateLow, gateHigh),
+      multiplyDivideValueRange: (2, multiplyDivideHigh),
       opWeights: {
         GateOperation.add: addW,
         GateOperation.subtract: subtractW,
@@ -59,6 +67,7 @@ class DifficultyParams {
       rowCount: 10,
       rowSpacing: 10.0,
       gateValueRange: (1, 3),
+      multiplyDivideValueRange: (2, 2),
       opWeights: const {
         GateOperation.add: 0.7,
         GateOperation.subtract: 0.3,
@@ -76,6 +85,7 @@ class DifficultyParams {
   final int rowCount;
   final double rowSpacing;
   final (int, int) gateValueRange;
+  final (int, int) multiplyDivideValueRange;
   final Map<GateOperation, double> opWeights;
   final double hazardDensity;
   final double looseNumberDensity;

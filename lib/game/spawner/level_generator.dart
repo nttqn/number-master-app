@@ -219,7 +219,13 @@ class LevelGenerator {
 
   static GateContent _randomGate(DifficultyParams p, Random rnd) {
     final op = _pickWeighted(rnd, p.opWeights);
-    final (low, high) = p.gateValueRange;
+    // Multiply/divide use their own (small, slow-growing) value range —
+    // sharing add/subtract's level-scaled range let a single gate multiply
+    // by dozens, which compounds into absurd numbers over a run's many
+    // rows. See DifficultyParams.forLevel for the full story.
+    final (low, high) = op == GateOperation.multiply || op == GateOperation.divide
+        ? p.multiplyDivideValueRange
+        : p.gateValueRange;
     final value = low + rnd.nextInt(max(1, high - low + 1));
     return GateContent(op, value);
   }
@@ -236,13 +242,34 @@ class LevelGenerator {
 
   // ---- Best/worst-case simulation ------------------------------------
 
+  /// Worst-case is meant to model a no-skill/unlucky playthrough, not an
+  /// adversary that deliberately idles forever — an empty ("do nothing")
+  /// lane must never be allowed to win the minimum just because it exists.
+  /// The fairness constraint guarantees a survivable lane every row,
+  /// usually including an empty one, so treating "no change" as an
+  /// eligible worst-case outcome pins this simulation at the starting
+  /// number for the entire run (an empty lane's "result" is always
+  /// `current`, at or below any survivable gate/number outcome). That
+  /// collapses the wall budget to ~0 and made nearly every generation
+  /// attempt fail its own feasibility check, silently falling back to the
+  /// bland safety-net preset for most levels. Only fall through to "no
+  /// change" when idling is the *only* survivable option in the row.
   static double _worstCaseStepForRow(double current, List<LaneContent?> lanes) {
-    double? worst;
+    double? worstNonIdle;
+    bool hasIdleOption = false;
     for (final c in lanes) {
+      if (c == null) {
+        hasIdleOption = true;
+        continue;
+      }
       final result = _resultFor(c, current);
-      if (result != null && (worst == null || result < worst)) worst = result;
+      if (result != null && (worstNonIdle == null || result < worstNonIdle)) {
+        worstNonIdle = result;
+      }
     }
-    return worst ?? current;
+    if (worstNonIdle != null) return worstNonIdle;
+    if (hasIdleOption) return current;
+    return current; // No survivable lane at all — shouldn't happen given fairness.
   }
 
   static double _bestCaseStepForRow(double current, List<LaneContent?> lanes) {
@@ -296,21 +323,36 @@ class LevelGenerator {
     // takes real margin from good lane choices rather than always leaving
     // a trivial leftover.
     final bias = (p.level / 20.0).clamp(0.3, 0.8);
-    final budget = worstCase * 0.7 + (bestCase * 0.9 - worstCase * 0.7) * bias;
+    final rawBudget = worstCase * 0.7 + (bestCase * 0.9 - worstCase * 0.7) * bias;
+    // bestCase is routinely far above worstCase (best play vs. no-skill
+    // play), so blending toward it could target a budget *larger than
+    // worstCase itself* — which makes feasibility structurally impossible
+    // no matter how the total is split across walls, regardless of luck.
+    // That was silently failing nearly every generation attempt across
+    // every level, falling back to the bland safety-net preset almost
+    // always. Clamp the target well under worstCase so it's achievable in
+    // principle, leaving a margin for rounding.
+    final budget = min(rawBudget, worstCase * 0.9);
 
     final walls = <WallSpec>[];
+    double remainingBudget = budget;
     double runningWorst = worstCase;
     bool feasible = true;
 
     for (int i = 0; i < n; i++) {
-      final randomFactor = 0.7 + rnd.nextDouble() * 0.6;
-      int value = ((budget / n) * randomFactor).round();
+      final wallsLeft = n - i;
+      // Narrower variance than before (was 0.7..1.3) and rebalanced off
+      // *remaining* budget/walls each step — a fixed budget/n share let
+      // early rounding-up eat into what was left for the last wall.
+      final randomFactor = 0.85 + rnd.nextDouble() * 0.3;
+      int value = ((remainingBudget / wallsLeft) * randomFactor).round();
       if (value < 1) value = 1;
       if (value > runningWorst) {
         feasible = false;
         value = max(1, runningWorst.floor());
       }
       runningWorst -= value;
+      remainingBudget -= value;
       walls.add(WallSpec(distance: runLength + (i + 1) * 12.0, value: value));
     }
 
