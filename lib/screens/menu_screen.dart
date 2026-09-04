@@ -56,15 +56,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     ],
                   ),
                   const Spacer(),
-                  const Text(
-                    'NUMBER MASTER',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 36,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
+                  Image.asset('assets/images/number-master-title.png', fit: BoxFit.contain),
                   const SizedBox(height: 8),
                   const Text(
                     'Run. Merge. Break through.',
