@@ -25,4 +25,11 @@ class AppPalette {
   /// blue sky background instead of blending into it.
   static const Color ctaGradientStart = Color(0xFFFFD23F);
   static const Color ctaGradientEnd = Color(0xFFFF5F1F);
+
+  /// Secondary menu/pause text (tagline, Shop, Sound toggle) — plain white
+  /// was hard to read against the light sky background. A vivid mid-tone
+  /// blue (not too dark) is the one color that reads clearly against
+  /// *both* the pale sky here and the dark overlayScrim in the pause
+  /// menu — a darker navy would nearly vanish on the latter.
+  static const Color menuTextAccent = Color(0xFF2F7FFF);
 }

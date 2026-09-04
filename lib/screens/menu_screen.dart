@@ -60,7 +60,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   const SizedBox(height: 8),
                   const Text(
                     'Run. Merge. Break through.',
-                    style: TextStyle(color: Colors.white60, fontSize: 16),
+                    style: TextStyle(color: AppPalette.menuTextAccent, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
                   _StartButton(
@@ -79,7 +79,11 @@ class _MenuScreenState extends State<MenuScreen> {
                         MaterialPageRoute(builder: (_) => const ShopScreen()),
                       );
                     },
-                    style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppPalette.menuTextAccent,
+                      side: const BorderSide(color: AppPalette.menuTextAccent, width: 2),
+                      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
                     icon: const Icon(Icons.storefront),
                     label: const Text('SHOP'),
                   ),
@@ -88,8 +92,15 @@ class _MenuScreenState extends State<MenuScreen> {
                     valueListenable: SoundService.instance.enabledNotifier,
                     builder: (context, enabled, _) => TextButton.icon(
                       onPressed: SoundService.instance.toggleEnabled,
-                      icon: Icon(enabled ? Icons.volume_up : Icons.volume_off, color: Colors.white70),
-                      label: Text(enabled ? 'Sound On' : 'Sound Off', style: const TextStyle(color: Colors.white70)),
+                      icon: Icon(enabled ? Icons.volume_up : Icons.volume_off, color: AppPalette.menuTextAccent),
+                      label: Text(
+                        enabled ? 'Sound On' : 'Sound Off',
+                        style: const TextStyle(
+                          color: AppPalette.menuTextAccent,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                   const Spacer(),

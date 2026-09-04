@@ -35,7 +35,11 @@ class PauseOverlay extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const ShopScreen()),
                 );
               },
-              style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppPalette.menuTextAccent,
+                side: const BorderSide(color: AppPalette.menuTextAccent, width: 2),
+                textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
               icon: const Icon(Icons.storefront),
               label: const Text('Shop'),
             ),
@@ -44,8 +48,11 @@ class PauseOverlay extends StatelessWidget {
               valueListenable: SoundService.instance.enabledNotifier,
               builder: (context, enabled, _) => TextButton.icon(
                 onPressed: SoundService.instance.toggleEnabled,
-                icon: Icon(enabled ? Icons.volume_up : Icons.volume_off, color: Colors.white),
-                label: Text(enabled ? 'Sound On' : 'Sound Off', style: const TextStyle(color: Colors.white)),
+                icon: Icon(enabled ? Icons.volume_up : Icons.volume_off, color: AppPalette.menuTextAccent),
+                label: Text(
+                  enabled ? 'Sound On' : 'Sound Off',
+                  style: const TextStyle(color: AppPalette.menuTextAccent, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
             const SizedBox(height: 12),
