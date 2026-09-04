@@ -7,6 +7,7 @@ import 'package:flutter/painting.dart' show TextPainter, TextSpan, TextStyle, Fo
 
 import '../../models/lane.dart';
 import '../number_master_game.dart';
+import 'text_fit.dart';
 
 /// The player: fixed at the ground plane (distance 0). Its x position
 /// follows the drag gesture 1:1 while the finger is down (clamped to the
@@ -104,12 +105,20 @@ class PlayerComponent extends PositionComponent with HasGameReference<NumberMast
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4,
     );
+    final text = '$number';
+    // A fixed font size wrapped a long number onto two lines that spilled
+    // outside the circle instead of shrinking to fit — shrink-to-fit and
+    // force a single line instead (maxLines/ellipsis as a last-resort
+    // safety net, not the primary mechanism).
+    final fontSize = fitFontSize(textLength: text.length, desiredFontSize: size.x * 0.34, maxWidth: size.x * 0.82);
     final tp = TextPainter(
       text: TextSpan(
-        text: '$number',
-        style: TextStyle(color: const Color(0xFFFFFFFF), fontSize: size.x * 0.34, fontWeight: FontWeight.bold),
+        text: text,
+        style: TextStyle(color: const Color(0xFFFFFFFF), fontSize: fontSize, fontWeight: FontWeight.bold),
       ),
       textDirection: TextDirection.ltr,
+      maxLines: 1,
+      ellipsis: '…',
     )..layout(maxWidth: size.x * 0.95);
     tp.paint(canvas, Offset(size.x / 2 - tp.width / 2, size.y / 2 - tp.height / 2));
   }

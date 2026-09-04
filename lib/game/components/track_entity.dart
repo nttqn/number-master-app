@@ -6,6 +6,7 @@ import 'package:flutter/painting.dart' show TextPainter, TextSpan, TextStyle, Fo
 import '../../models/lane.dart';
 import '../number_master_game.dart';
 import 'player_component.dart';
+import 'text_fit.dart';
 
 /// Shared lifecycle for everything that lives on the track (gates, loose
 /// numbers, hazards): carries a scalar [distance] to the player that
@@ -59,24 +60,14 @@ abstract class TrackEntity extends PositionComponent
   /// Called once, at the instant this entity reaches the player's plane.
   void onResolve(PlayerComponent player);
 
-  void paintCenteredLabel(Canvas canvas, String text, {Color color = const Color(0xFFFFFFFF)}) {
-    if (size.x < 6) return;
-    final tp = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: TextStyle(color: color, fontSize: size.x * 0.4, fontWeight: FontWeight.bold),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout(maxWidth: size.x * 1.4);
-    tp.paint(canvas, Offset(size.x / 2 - tp.width / 2, size.y / 2 - tp.height / 2));
-  }
-
   /// Plain bold number with a white outline, no background shape — matches
-  /// the reference game's on-track number style (as opposed to the boxed
-  /// badge look [paintCenteredLabel] still uses for walls).
+  /// the reference game's on-track number style. Shrinks to fit so a
+  /// large value (loose numbers scale with the player's own number, which
+  /// can get into 5-6 digits on a long run) never bleeds far past its
+  /// lane into its neighbors.
   void paintOutlinedNumber(Canvas canvas, String text, Color color, {double scale = 0.52}) {
     if (size.x < 6) return;
-    final fontSize = size.x * scale;
+    final fontSize = fitFontSize(textLength: text.length, desiredFontSize: size.x * scale, maxWidth: size.x * 1.6);
     final style = TextStyle(fontSize: fontSize, fontWeight: FontWeight.w900);
     final strokePainter = TextPainter(
       text: TextSpan(

@@ -5,6 +5,7 @@ import 'package:flutter/painting.dart' show TextPainter, TextSpan, TextStyle, Fo
 
 import '../../theme/palette.dart';
 import '../number_master_game.dart';
+import 'text_fit.dart';
 
 /// A full-width wall at the end of a level, not scoped to a single lane —
 /// breaking through requires the player's number to be at least [value];
@@ -48,12 +49,16 @@ class WallComponent extends PositionComponent with HasGameReference<NumberMaster
   void render(Canvas canvas) {
     if (size.x < 4) return;
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), Paint()..color = AppPalette.wallFill);
+    final text = '$value';
+    final fontSize = fitFontSize(textLength: text.length, desiredFontSize: size.y * 0.45, maxWidth: size.x * 0.9);
     final tp = TextPainter(
       text: TextSpan(
-        text: '$value',
-        style: TextStyle(color: const Color(0xFFFFFFFF), fontSize: size.y * 0.45, fontWeight: FontWeight.bold),
+        text: text,
+        style: TextStyle(color: const Color(0xFFFFFFFF), fontSize: fontSize, fontWeight: FontWeight.bold),
       ),
       textDirection: TextDirection.ltr,
+      maxLines: 1,
+      ellipsis: '…',
     )..layout();
     tp.paint(canvas, Offset(size.x / 2 - tp.width / 2, size.y / 2 - tp.height / 2));
   }
