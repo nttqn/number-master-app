@@ -72,17 +72,23 @@ class _MenuScreenState extends State<MenuScreen> {
                   ),
                   const Spacer(),
                   ElevatedButton(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => GameScreen(startLevel: _unlockedLevel)),
-                    ),
+                    onPressed: () {
+                      SoundService.instance.play(SfxEvent.menuConfirm);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => GameScreen(startLevel: _unlockedLevel)),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16)),
                     child: Text('PLAY  (Level $_unlockedLevel)', style: const TextStyle(fontSize: 18)),
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const ShopScreen()),
-                    ),
+                    onPressed: () {
+                      SoundService.instance.play(SfxEvent.menuConfirm);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const ShopScreen()),
+                      );
+                    },
                     style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
                     icon: const Icon(Icons.storefront),
                     label: const Text('SHOP'),

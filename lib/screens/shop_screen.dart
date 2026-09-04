@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../game/economy.dart';
 import '../services/save_service.dart';
+import '../services/sound_service.dart';
 import '../theme/palette.dart';
 
 class ShopScreen extends StatelessWidget {
@@ -15,6 +16,13 @@ class ShopScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text('SHOP'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            SoundService.instance.play(SfxEvent.menuBack);
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: SafeArea(
         child: Padding(
@@ -109,7 +117,12 @@ class _UpgradeCard extends StatelessWidget {
                 builder: (context, coins, _) {
                   final canAfford = coins >= nextCost;
                   return ElevatedButton(
-                    onPressed: canAfford ? () => onBuy() : null,
+                    onPressed: canAfford
+                        ? () {
+                            SoundService.instance.play(SfxEvent.menuConfirm);
+                            onBuy();
+                          }
+                        : null,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

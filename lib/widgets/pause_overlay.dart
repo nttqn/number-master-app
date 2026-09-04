@@ -20,12 +20,21 @@ class PauseOverlay extends StatelessWidget {
           children: [
             const Text('PAUSED', style: TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)),
             const SizedBox(height: 24),
-            ElevatedButton(onPressed: game.resumeFromPause, child: const Text('Resume')),
+            ElevatedButton(
+              onPressed: () {
+                SoundService.instance.play(SfxEvent.menuBack);
+                game.resumeFromPause();
+              },
+              child: const Text('Resume'),
+            ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ShopScreen()),
-              ),
+              onPressed: () {
+                SoundService.instance.play(SfxEvent.menuConfirm);
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ShopScreen()),
+                );
+              },
               style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
               icon: const Icon(Icons.storefront),
               label: const Text('Shop'),
@@ -41,7 +50,10 @@ class PauseOverlay extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             TextButton(
-              onPressed: game.onRequestQuit,
+              onPressed: () {
+                SoundService.instance.play(SfxEvent.menuBack);
+                game.onRequestQuit();
+              },
               child: const Text('Quit to Menu', style: TextStyle(color: Colors.white70)),
             ),
           ],

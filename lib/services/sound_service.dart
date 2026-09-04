@@ -3,14 +3,26 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum SfxEvent {
-  swipe('swipe.wav'),
-  gateGood('gate_good.wav'),
-  gateBad('gate_bad.wav'),
-  absorb('absorb.wav'),
-  death('death.wav'),
-  wallBreak('wall_break.wav'),
-  levelComplete('level_complete.wav'),
-  buttonTap('button_tap.wav');
+  /// A forward/positive menu action: PLAY, opening the Shop, Retry, Next
+  /// Level, a successful purchase.
+  menuConfirm('sfx_menu_confirm.wav'),
+
+  /// A back/return action: Resume, Quit to Menu, the Shop's back button.
+  menuBack('sfx_menu_back.wav'),
+
+  /// Touching a number that increases the player's number — a beneficial
+  /// gate (add/multiply) or absorbing a smaller loose number.
+  scoreUp('sfx_stick.wav'),
+
+  /// Touching a number that decreases the player's number — a
+  /// subtract/divide gate.
+  scoreDown('sfx_paint.wav'),
+
+  /// Breaking through a wall.
+  wallHit('sfx_explosive.wav'),
+
+  gameOver('m_failed.mp3'),
+  levelComplete('m_win.mp3');
 
   const SfxEvent(this.fileName);
   final String fileName;
@@ -18,7 +30,7 @@ enum SfxEvent {
 
 /// Wraps flame_audio's AudioPool — never plain AudioPlayer, which has a
 /// known leak/delay bug on this stack. Safe to ship with zero or partial
-/// WAV files under assets/audio/: every load is try/catch-guarded so a
+/// audio files under assets/audio/: every load is try/catch-guarded so a
 /// missing file just silently no-ops instead of crashing.
 class SoundService {
   SoundService._();

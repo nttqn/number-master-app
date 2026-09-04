@@ -28,6 +28,47 @@ checks. `test/level_generator_test.dart` asserts both invariants across a
 spread of levels — always run this after touching the generator, before
 ever looking at it rendered.
 
+## Real sound assets + wall-break shard effect (2026-09-04, sixth session)
+
+The user dropped real SFX at `sound_src/` (untracked, same "raw drop-in,
+not repo content" treatment as the root `bg.png`) and asked for specific
+event mappings. `SfxEvent` (`lib/services/sound_service.dart`) was
+rewritten around the actual file names rather than placeholders:
+`menuConfirm`/`menuBack` (forward vs. back navigation — Resume counts as
+"back", grouped with Quit/the Shop's back arrow), `scoreUp`/`scoreDown`
+(gate color and absorbing a loose number both funnel into these two —
+absorb is always `scoreUp` since a bigger loose number is instant death,
+never a "decrease"), `wallHit`, `gameOver`, `levelComplete`. The old
+`swipe` event had no matching asset and was dropped entirely rather than
+left as a permanent no-op. Every button that navigates forward or back
+across Menu/Pause/GameOver/LevelComplete/Shop now plays one of the two
+menu sounds — this touched a lot of small `onPressed` closures but no
+architecture.
+
+Wall-break got a matching visual: `WallBreakEffect`
+(`lib/game/components/wall_break_effect.dart`) is a self-contained
+one-shot component (12 rectangular shards, radial velocity + drag +
+rotation, fade+shrink over 0.5s, self-removes) spawned by
+`NumberMasterGame.resolveWall` at the wall's exact break position/scale
+on a *successful* break only. The wall component itself is now removed
+immediately on break (`wall.removeFromParent()`) instead of continuing to
+drift past the player until `despawnDistance` — previously harmless since
+nothing looked at it, but visually it would have kept existing as a solid
+rectangle behind/through the shatter, which reads wrong. Sizing the shards
+off `wall.size.y / 150.0` recovers the perspective scale at the instant of
+breaking (150 is `WallComponent`'s own un-scaled height) so a wall broken
+far away doesn't spawn a burst sized for point-blank.
+
+Verifying this one needed an actual live playthrough, not just a
+screenshot at a guessed timestamp — a scripted blind alternating-swipe
+bot dies more often than not before reaching the walls (level 1's own
+hazard rows are enough to catch a non-reactive script), and even once it
+survives, timing a screenshot to land inside the ~0.5s effect window
+needs rapid-fire capture across the whole approach, not a single shot.
+Confirmed via ~40 screenshots at 150ms intervals through a full run —
+caught the shard debris mid-fade at the exact frame the wall count ticked
+down.
+
 ## The generator was silently using its own safety-net preset for almost every level (2026-08-29, fifth session)
 
 Reported symptom: a real playthrough reached level.number = 777,738,780 at

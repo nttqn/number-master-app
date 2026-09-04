@@ -106,14 +106,16 @@ design bugs, before ever looking at them rendered.
 
 ## Sound
 
-`assets/audio/` currently has no real WAV files — `SoundService` is
-designed to be safe with zero or partial audio assets (every load is
-try/catch + timeout guarded, and the whole init is fire-and-forget from
-`main()` so a hung/missing asset can never block the app from rendering).
-Add real files matching the names in `lib/services/sound_service.dart`'s
-`SfxEvent` enum (`swipe.wav`, `gate_good.wav`, `gate_bad.wav`, `absorb.wav`,
-`death.wav`, `wall_break.wav`, `level_complete.wav`, `button_tap.wav`) to
-`assets/audio/` whenever they're available — no code changes needed.
+`assets/audio/` has real SFX (`lib/services/sound_service.dart`'s
+`SfxEvent` enum): `sfx_menu_confirm.wav`/`sfx_menu_back.wav` (forward vs.
+back navigation, played from every Menu/Pause/GameOver/LevelComplete/Shop
+button), `sfx_stick.wav`/`sfx_paint.wav` (number goes up / down),
+`sfx_explosive.wav` (wall break), `m_failed.mp3` (game over), `m_win.mp3`
+(level complete). `SoundService` stays safe with zero or partial audio
+assets regardless (every load is try/catch + timeout guarded, and the
+whole init is fire-and-forget from `main()` so a hung/missing asset can
+never block the app from rendering) — swapping any file is just replacing
+it under `assets/audio/`, no code changes needed.
 
 ## Before publishing to Google Play — checklist
 

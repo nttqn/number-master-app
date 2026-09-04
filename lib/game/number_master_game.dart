@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import '../models/gate_operation.dart';
 import '../models/lane.dart';
 import '../services/sound_service.dart';
+import '../theme/palette.dart';
 import 'components/player_component.dart';
+import 'components/wall_break_effect.dart';
 import 'components/wall_component.dart';
 import 'game_state.dart';
 import 'level_runtime.dart';
@@ -111,11 +113,7 @@ class NumberMasterGame extends FlameGame {
   /// crossed.
   void handleDragUpdate(double deltaX) {
     if (!_canSteer) return;
-    final previousLane = player.currentLane;
     player.followDrag(deltaX);
-    if (player.currentLane != previousLane) {
-      SoundService.instance.play(SfxEvent.swipe);
-    }
   }
 
   /// Called when the finger lifts — eases into the nearest lane's center.
@@ -128,14 +126,14 @@ class NumberMasterGame extends FlameGame {
     player.number = op.apply(player.number, value);
     numberNotifier.value = player.number;
     player.pulse();
-    SoundService.instance.play(op.isBeneficialColor ? SfxEvent.gateGood : SfxEvent.gateBad);
+    SoundService.instance.play(op.isBeneficialColor ? SfxEvent.scoreUp : SfxEvent.scoreDown);
   }
 
   void absorbNumber(int value) {
     player.number += value;
     numberNotifier.value = player.number;
     player.pulse();
-    SoundService.instance.play(SfxEvent.absorb);
+    SoundService.instance.play(SfxEvent.scoreUp);
   }
 
   void enterWallSequence() {
@@ -148,7 +146,18 @@ class NumberMasterGame extends FlameGame {
       numberNotifier.value = player.number;
       wallsRemainingNotifier.value = wallsRemainingNotifier.value - 1;
       player.pulse();
-      SoundService.instance.play(SfxEvent.wallBreak);
+      SoundService.instance.play(SfxEvent.wallHit);
+      // The un-scaled wall is 150 tall (WallComponent.update); dividing by
+      // that recovers the perspective scale at the instant it broke, so
+      // the shard burst is sized to match how big/close the wall looked.
+      add(
+        WallBreakEffect(
+          position: wall.position.clone(),
+          scale: wall.size.y / 150.0,
+          color: AppPalette.wallFill,
+        ),
+      );
+      wall.removeFromParent();
       if (wallsRemainingNotifier.value <= 0) {
         _completeLevel();
       }
@@ -171,7 +180,7 @@ class NumberMasterGame extends FlameGame {
     stateNotifier.value = GameState.gameOver;
     overlays.add('gameOver');
     pauseEngine();
-    SoundService.instance.play(SfxEvent.death);
+    SoundService.instance.play(SfxEvent.gameOver);
     onGameOver(level, player.number);
   }
 
