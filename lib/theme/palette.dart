@@ -20,4 +20,9 @@ class AppPalette {
 
   static const Color overlayScrim = Color(0xE6132548);
   static const Color overlayScrimLight = Color(0x99132548);
+
+  /// The main-menu START button — a warm gradient so it pops against the
+  /// blue sky background instead of blending into it.
+  static const Color ctaGradientStart = Color(0xFFFFD23F);
+  static const Color ctaGradientEnd = Color(0xFFFF5F1F);
 }

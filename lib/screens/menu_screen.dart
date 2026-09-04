@@ -63,15 +63,13 @@ class _MenuScreenState extends State<MenuScreen> {
                     style: TextStyle(color: Colors.white60, fontSize: 16),
                   ),
                   const Spacer(),
-                  ElevatedButton(
+                  _StartButton(
                     onPressed: () {
                       SoundService.instance.play(SfxEvent.menuConfirm);
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => GameScreen(startLevel: _unlockedLevel)),
                       );
                     },
-                    style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16)),
-                    child: Text('PLAY  (Level $_unlockedLevel)', style: const TextStyle(fontSize: 18)),
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
@@ -100,6 +98,52 @@ class _MenuScreenState extends State<MenuScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A bold gradient pill button for the menu's primary call-to-action —
+/// plain [ElevatedButton] styling read as flat/dark against the sky
+/// background, so this uses a warm gradient + heavier text instead.
+class _StartButton extends StatelessWidget {
+  const _StartButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppPalette.ctaGradientStart, AppPalette.ctaGradientEnd],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(36),
+        boxShadow: [
+          BoxShadow(color: AppPalette.ctaGradientEnd.withValues(alpha: 0.5), blurRadius: 16, offset: const Offset(0, 6)),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(36),
+          onTap: onPressed,
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 64, vertical: 18),
+            child: Text(
+              'START',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 2,
+                shadows: [Shadow(color: Colors.black38, blurRadius: 4, offset: Offset(0, 2))],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
