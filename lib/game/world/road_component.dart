@@ -16,16 +16,33 @@ import '../number_master_game.dart';
 class RoadComponent extends PositionComponent with HasGameReference<NumberMasterGame> {
   static const List<double> _samples = [500, 250, 130, 70, 40, 22, 12, 6, 2, 0];
 
+  Image? _backgroundImage;
+
+  @override
+  Future<void> onLoad() async {
+    super.onLoad();
+    try {
+      _backgroundImage = await game.images.load('bg.png');
+    } catch (_) {
+      // Missing/invalid asset — falls back to the plain gradient sky below.
+    }
+  }
+
   @override
   void render(Canvas canvas) {
     final size = game.size;
-    final skyPaint = Paint()
-      ..shader = Gradient.linear(
-        Offset(size.x / 2, 0),
-        Offset(size.x / 2, size.y),
-        [AppPalette.skyTop, AppPalette.skyBottom],
-      );
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), skyPaint);
+    final bg = _backgroundImage;
+    if (bg != null) {
+      canvas.drawImageRect(bg, _coverSrcRect(bg, size), Rect.fromLTWH(0, 0, size.x, size.y), Paint());
+    } else {
+      final skyPaint = Paint()
+        ..shader = Gradient.linear(
+          Offset(size.x / 2, 0),
+          Offset(size.x / 2, size.y),
+          [AppPalette.skyTop, AppPalette.skyBottom],
+        );
+      canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), skyPaint);
+    }
 
     final p = game.projection;
 
@@ -61,5 +78,24 @@ class RoadComponent extends PositionComponent with HasGameReference<NumberMaster
       }
       canvas.drawPath(path, dividerPaint);
     }
+  }
+
+  /// BoxFit.cover-equivalent: the largest centered crop of [image] whose
+  /// aspect ratio matches [dstSize], so the background fills the screen
+  /// without stretching regardless of device aspect ratio.
+  Rect _coverSrcRect(Image image, Vector2 dstSize) {
+    final imgW = image.width.toDouble();
+    final imgH = image.height.toDouble();
+    final imgAspect = imgW / imgH;
+    final dstAspect = dstSize.x / dstSize.y;
+    double srcW, srcH;
+    if (imgAspect > dstAspect) {
+      srcH = imgH;
+      srcW = imgH * dstAspect;
+    } else {
+      srcW = imgW;
+      srcH = imgW / dstAspect;
+    }
+    return Rect.fromLTWH((imgW - srcW) / 2, (imgH - srcH) / 2, srcW, srcH);
   }
 }

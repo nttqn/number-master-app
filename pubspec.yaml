@@ -26,6 +26,7 @@ flutter:
   assets:
     - assets/icon/icon.png
     - assets/audio/
+    - assets/images/
 
 flutter_launcher_icons:
   android: true
