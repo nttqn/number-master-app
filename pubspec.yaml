@@ -14,6 +14,10 @@ dependencies:
   flame_audio: ^2.11.6
   google_mobile_ads: ^9.0.0
   shared_preferences: ^2.2.3
+  # Pinned: 2.5.0 (2026-10-17, Pigeon JNI rewrite) hangs getInstance() in
+  # real-device release builds — saves silently never persist. 2.4.28 is the
+  # last pre-JNI release. Test a real release APK on a device before unpinning.
+  shared_preferences_android: 2.4.28
 
 dev_dependencies:
   flutter_test:
