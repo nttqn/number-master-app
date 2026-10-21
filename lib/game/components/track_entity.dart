@@ -47,6 +47,8 @@ abstract class TrackEntity extends PositionComponent
     position = Vector2(p.screenXAt(lane.laneOffset, depth), p.screenYAt(depth));
     final s = p.renderSizeAt(depth, baseSize);
     size = Vector2.all(s);
+    final layer = Layers.forDepth(depth);
+    if (priority != layer) priority = layer;
 
     if (!resolved && depth <= resolveDistance) {
       resolved = true;
@@ -65,8 +67,9 @@ abstract class TrackEntity extends PositionComponent
   /// large value (loose numbers scale with the player's own number, which
   /// can get into 5-6 digits on a long run) never bleeds far past its
   /// lane into its neighbors.
-  void paintOutlinedNumber(Canvas canvas, String text, Color color, {double scale = 0.52}) {
+  void paintOutlinedNumber(Canvas canvas, String text, Color color, {double scale = 0.52, Offset? center}) {
     if (size.x < 6) return;
+    center ??= Offset(size.x / 2, size.y / 2);
     final fontSize = fitFontSize(textLength: text.length, desiredFontSize: size.x * scale, maxWidth: size.x * 1.6);
     final style = TextStyle(fontSize: fontSize, fontWeight: FontWeight.w900);
     final strokePainter = TextPainter(
@@ -85,9 +88,22 @@ abstract class TrackEntity extends PositionComponent
       text: TextSpan(text: text, style: style.copyWith(color: color)),
       textDirection: TextDirection.ltr,
     )..layout();
-    final offset = Offset(size.x / 2 - fillPainter.width / 2, size.y / 2 - fillPainter.height / 2);
+    final offset = Offset(center.dx - fillPainter.width / 2, center.dy - fillPainter.height / 2);
     strokePainter.paint(canvas, offset);
     fillPainter.paint(canvas, offset);
+  }
+
+  /// Local y of the point where this entity touches the road — slightly
+  /// below its center, so things visibly stand *on* the road instead of
+  /// being cut through the middle by the ground line.
+  double get groundLocalY => size.y * 0.62;
+
+  /// Soft contact shadow so entities sit on the road rather than float.
+  void paintShadow(Canvas canvas, {double widthFactor = 0.9}) {
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(size.x / 2, groundLocalY), width: size.x * widthFactor, height: size.y * 0.2),
+      Paint()..color = const Color(0x33000000),
+    );
   }
 
   /// Small flag glyph drawn above a threatening (enemy-colored) number,

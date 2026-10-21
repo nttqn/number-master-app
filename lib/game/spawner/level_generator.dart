@@ -65,7 +65,21 @@ class LevelGenerator {
       walls: wallResult.walls,
       trackSpeed: params.trackSpeed,
       runLength: runLength,
+      stairStepCost: _stairStepCost(worstCase, bestCase, wallResult.walls),
     );
+  }
+
+  /// Per-step cost of the bonus staircase, from what a worst-case and a
+  /// best-case run would have left after the walls. Their geometric mean
+  /// stands in for a "middling" run (bestCase can be orders of magnitude
+  /// above worstCase once multiply gates appear, so an arithmetic mean
+  /// would make every real run look bad); dividing it by 5 lets that run
+  /// reach about x6.
+  static int _stairStepCost(double worstCase, double bestCase, List<WallSpec> walls) {
+    final wallTotal = walls.fold<int>(0, (sum, w) => sum + w.value);
+    final worstLeft = max(1.0, worstCase - wallTotal);
+    final bestLeft = max(worstLeft, bestCase - wallTotal);
+    return max(1, (sqrt(worstLeft * bestLeft) / 5).ceil());
   }
 
   /// Builds rows normally, force-fixes any row that still isn't fair
@@ -106,6 +120,7 @@ class LevelGenerator {
       walls: walls,
       trackSpeed: params.trackSpeed,
       runLength: runLength,
+      stairStepCost: _stairStepCost(_simulateWorstCase(rows), _simulateBestCase(rows), walls),
     );
   }
 

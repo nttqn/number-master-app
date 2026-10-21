@@ -51,6 +51,7 @@ class GeneratedLevel {
     required this.walls,
     required this.trackSpeed,
     required this.runLength,
+    required this.stairStepCost,
   });
 
   final int level;
@@ -60,4 +61,9 @@ class GeneratedLevel {
 
   /// Total distance of the running portion, before the wall sequence.
   final double runLength;
+
+  /// Number spent per step of the bonus staircase after the walls (x2 …
+  /// x10). Sized so a middling run reaches around x5-x6 and only near-best
+  /// play reaches x10.
+  final int stairStepCost;
 }

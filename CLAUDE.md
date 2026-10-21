@@ -28,6 +28,38 @@ checks. `test/level_generator_test.dart` asserts both invariants across a
 spread of levels — always run this after touching the generator, before
 ever looking at it rendered.
 
+## Visual overhaul + bonus staircase (2026-10-21)
+
+The user found the game visually flat and the gameplay dull. Changes:
+
+- **Road scrolls.** `RoadComponent` lays stripes, curb blocks, lane dashes
+  and flag posts out in world distance offset by `NumberMasterGame.scrolled`
+  (previously the bands were fixed on screen — no sense of speed). It uses
+  `Projection.roadScaleAt` (no min-scale floor, allows negative distance)
+  so the road converges properly and runs off the screen bottom. Drawn as a
+  floating bridge (underside strip) since `bg.png` is open sky.
+- **Draw order by depth.** Entities and full-width blocks set
+  `priority = Layers.forDepth(depth)` every frame (only when it changes), so
+  nearer things draw over farther ones; road/player/effects use the fixed
+  `Layers` constants. Needed once gates became tall glass panels.
+- **Entities stand on the road**: `TrackEntity.groundLocalY` + `paintShadow`.
+  Player is a pseudo-3D cube colored by log2(number) (`AppPalette.playerTiers`)
+  that grows slightly with the number.
+- **Juice**: `FloatingText` ("+5", "x2", "-12"), shard bursts on every gate/
+  absorb (reusing `WallBreakEffect`), `NumberMasterGame.shake()` (whole-canvas
+  translate in `render`).
+- **Bonus staircase** after the walls: `StairStepComponent` x2..x10 (shares
+  `FullWidthBlock` with `WallComponent`), spawned lazily by `LevelRuntime`.
+  Each step costs `GeneratedLevel.stairStepCost` (geometric mean of worst/
+  best leftover after walls ÷ 5). Running out ends the bonus, never a game
+  over. Coins on a clear = `coinsForRun(bonusNumber) × multiplier`, where
+  `bonusNumber` is the number carried out of the walls.
+
+To test the late-level flow in a browser, a temporary
+`--dart-define`-gated god mode (skip `triggerGameOver`, +60 start number)
+was added and removed again — a blind Playwright bot rarely survives to the
+walls.
+
 ## Real sound assets + wall-break shard effect (2026-09-04, sixth session)
 
 The user dropped real SFX at `sound_src/` (untracked, same "raw drop-in,

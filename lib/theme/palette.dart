@@ -13,6 +13,36 @@ class AppPalette {
   static const Color roadSurface = Color(0xFFF4F6F9);
   static const Color roadStripe = Color(0xFFE2E7ED);
   static const Color laneDivider = Color(0xFFC3CBD6);
+  static const Color roadUnderside = Color(0xFF6F86A8);
+  static const Color curbRed = Color(0xFFF0455A);
+
+  /// Rainbow for the end-of-level bonus staircase, x2 (first) → x10.
+  static const List<Color> stairColors = [
+    Color(0xFF2ED47A),
+    Color(0xFF1FC2C2),
+    Color(0xFF3D8BFF),
+    Color(0xFF6E5CFF),
+    Color(0xFFB55CFF),
+    Color(0xFFFF5CC8),
+    Color(0xFFFF4D6D),
+    Color(0xFFFF8A3D),
+    Color(0xFFFFC233),
+  ];
+
+  /// Player cube body color by number size (2048-style tiers): index is
+  /// roughly log2(number), clamped to the last entry.
+  static const List<Color> playerTiers = [
+    Color(0xFF2ECC71),
+    Color(0xFF1ABC9C),
+    Color(0xFF3498DB),
+    Color(0xFF5B6CFF),
+    Color(0xFF9B59B6),
+    Color(0xFFE84393),
+    Color(0xFFE74C3C),
+    Color(0xFFE67E22),
+    Color(0xFFF1C40F),
+    Color(0xFFFFB300),
+  ];
 
   static const Color enemyNumber = Color(0xFFE0293E);
   static const Color friendlyNumber = Color(0xFF2D6CDF);

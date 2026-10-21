@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui' hide TextStyle;
 
 import 'package:flame/components.dart';
@@ -6,6 +7,8 @@ import 'package:flutter/animation.dart' show Curves;
 import 'package:flutter/painting.dart' show TextPainter, TextSpan, TextStyle, FontWeight;
 
 import '../../models/lane.dart';
+import '../../theme/palette.dart';
+import '../game_state.dart';
 import '../number_master_game.dart';
 import 'text_fit.dart';
 
@@ -93,33 +96,97 @@ class PlayerComponent extends PositionComponent with HasGameReference<NumberMast
     );
   }
 
+  double _time = 0;
+
+  /// The cube grows a little with every doubling of [number] so getting
+  /// bigger reads at a glance, capped so it never covers its neighbors.
+  double get _growth => (1 + 0.07 * log(max(1, number)) / ln2).clamp(1.0, 1.5);
+
+  Color get _bodyColor {
+    final tier = (log(max(1, number)) / ln2).floor();
+    return AppPalette.playerTiers[tier.clamp(0, AppPalette.playerTiers.length - 1)];
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    _time += dt;
+    size = Vector2.all(baseSize * _growth);
+  }
+
   @override
   void render(Canvas canvas) {
-    final center = Offset(size.x / 2, size.y / 2);
-    canvas.drawCircle(center, size.x / 2, Paint()..color = const Color(0xFF10B981));
-    canvas.drawCircle(
-      center,
-      size.x / 2,
-      Paint()
-        ..color = const Color(0xFFFFFFFF)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4,
+    final w = size.x;
+    final ground = size.y * 0.62;
+    // A small running hop, only while the track is actually moving.
+    final moving = game.stateNotifier.value == GameState.running ||
+        game.stateNotifier.value == GameState.wallSequence ||
+        game.stateNotifier.value == GameState.bonusStairs;
+    final hop = moving ? sin(_time * 14).abs() * w * 0.06 : 0.0;
+
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(w / 2, ground), width: w * (0.95 - hop / w), height: w * 0.22),
+      Paint()..color = const Color(0x40000000),
     );
+
+    final body = _bodyColor;
+    final frontW = w * 0.86;
+    final frontH = w * 0.6;
+    final topH = w * 0.24;
+    final left = (w - frontW) / 2;
+    final bottom = ground - hop;
+    final front = Rect.fromLTWH(left, bottom - frontH, frontW, frontH);
+
+    // Top face: a trapezoid narrowing away from the camera.
+    final inset = w * 0.07;
+    final topFace = Path()
+      ..moveTo(front.left, front.top)
+      ..lineTo(front.left + inset, front.top - topH)
+      ..lineTo(front.right - inset, front.top - topH)
+      ..lineTo(front.right, front.top)
+      ..close();
+    canvas.drawPath(topFace, Paint()..color = Color.lerp(body, const Color(0xFFFFFFFF), 0.4)!);
+
+    canvas.drawRRect(
+      RRect.fromRectAndCorners(front, bottomLeft: Radius.circular(w * 0.08), bottomRight: Radius.circular(w * 0.08)),
+      Paint()
+        ..shader = Gradient.linear(
+          front.topCenter,
+          front.bottomCenter,
+          [body, Color.lerp(body, const Color(0xFF000000), 0.25)!],
+        ),
+    );
+    // Glossy highlight strip along the front face's top edge.
+    canvas.drawRect(
+      Rect.fromLTWH(front.left, front.top, frontW, frontH * 0.14),
+      Paint()..color = const Color(0x33FFFFFF),
+    );
+
     final text = '$number';
-    // A fixed font size wrapped a long number onto two lines that spilled
-    // outside the circle instead of shrinking to fit — shrink-to-fit and
-    // force a single line instead (maxLines/ellipsis as a last-resort
-    // safety net, not the primary mechanism).
-    final fontSize = fitFontSize(textLength: text.length, desiredFontSize: size.x * 0.34, maxWidth: size.x * 0.82);
-    final tp = TextPainter(
+    // Shrink-to-fit and force a single line — a fixed font size wrapped a
+    // long number onto two lines that spilled outside the body.
+    final fontSize = fitFontSize(textLength: text.length, desiredFontSize: w * 0.36, maxWidth: frontW * 0.88);
+    final style = TextStyle(fontSize: fontSize, fontWeight: FontWeight.w900);
+    final stroke = TextPainter(
       text: TextSpan(
         text: text,
-        style: TextStyle(color: const Color(0xFFFFFFFF), fontSize: fontSize, fontWeight: FontWeight.bold),
+        style: style.copyWith(
+          foreground: Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = fontSize * 0.14
+            ..color = const Color(0x99000000),
+        ),
       ),
       textDirection: TextDirection.ltr,
       maxLines: 1,
-      ellipsis: '…',
-    )..layout(maxWidth: size.x * 0.95);
-    tp.paint(canvas, Offset(size.x / 2 - tp.width / 2, size.y / 2 - tp.height / 2));
+    )..layout();
+    final fill = TextPainter(
+      text: TextSpan(text: text, style: style.copyWith(color: const Color(0xFFFFFFFF))),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+    final offset = Offset(w / 2 - fill.width / 2, front.center.dy - fill.height / 2);
+    stroke.paint(canvas, offset);
+    fill.paint(canvas, offset);
   }
 }

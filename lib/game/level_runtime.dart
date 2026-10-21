@@ -21,13 +21,25 @@ import 'spawner/spawn_row.dart';
 /// preceding rows are done.
 class LevelRuntime {
   LevelRuntime(this.game, this.generated) {
-    for (final wall in generated.walls) {
+    // Farthest first, so before their distance-based draw order kicks in
+    // the nearer walls already draw over the farther ones.
+    for (final wall in generated.walls.reversed) {
       game.add(WallComponent(value: wall.value, spawnDistance: wall.distance));
     }
   }
 
   final NumberMasterGame game;
   final GeneratedLevel generated;
+
+  /// Bonus staircase after the walls: x2, x3 … x[maxMultiplier], one step
+  /// every [stairSpacing] world units. Spawned lazily (like rows) rather
+  /// than up front like walls, so they don't pile up at the horizon all
+  /// level long.
+  static const int maxMultiplier = 10;
+  static const double stairSpacing = 6.0;
+  int _nextStair = 2;
+
+  double get _stairsStart => (generated.walls.isEmpty ? generated.runLength : generated.walls.last.distance) + 10;
 
   /// How far ahead of the player (in world distance units) a row entity is
   /// allowed to spawn — matches the road's visible draw distance so
@@ -45,6 +57,19 @@ class LevelRuntime {
         generated.rows[_nextRowIndex].distance - traveled <= spawnAheadDistance) {
       _spawnRow(generated.rows[_nextRowIndex]);
       _nextRowIndex++;
+    }
+
+    while (_nextStair <= maxMultiplier) {
+      final distance = _stairsStart + (_nextStair - 2) * stairSpacing;
+      if (distance - traveled > spawnAheadDistance) break;
+      game.add(
+        StairStepComponent(
+          multiplier: _nextStair,
+          cost: generated.stairStepCost,
+          spawnDistance: distance - traveled,
+        ),
+      );
+      _nextStair++;
     }
 
     // A row's entities keep depth == row.distance - traveled for their

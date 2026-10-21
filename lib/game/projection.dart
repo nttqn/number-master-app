@@ -56,6 +56,16 @@ class Projection {
     return raw.clamp(minRenderScale, 1.0);
   }
 
+  /// Like [scaleAt] but without the [minRenderScale] floor and allowing
+  /// slightly negative distances (scale > 1) — for drawing the road
+  /// itself, which must keep converging toward the horizon and extend
+  /// past the player down to the screen's bottom edge. Entities keep
+  /// using [scaleAt].
+  double roadScaleAt(double distance) {
+    final d = distance < -cameraDepth * 0.6 ? -cameraDepth * 0.6 : distance;
+    return cameraDepth / (d + cameraDepth);
+  }
+
   double screenYAt(double distance) {
     final s = scaleAt(distance);
     return horizonY + (groundY - horizonY) * s;

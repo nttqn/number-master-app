@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import '../../theme/palette.dart';
@@ -20,7 +21,7 @@ class LooseNumberComponent extends TrackEntity {
   void onResolve(PlayerComponent player) {
     if (lane == player.currentLane) {
       if (value < player.number) {
-        game.absorbNumber(value);
+        game.absorbNumber(value, at: absoluteCenter);
       } else {
         game.triggerGameOver();
       }
@@ -36,7 +37,21 @@ class LooseNumberComponent extends TrackEntity {
     // and doubles as real-time feedback as the player's number changes.
     final isSafe = value < game.player.number;
     final color = isSafe ? AppPalette.friendlyNumber : AppPalette.enemyNumber;
+    paintShadow(canvas, widthFactor: 0.7);
+    // Gentle bob, phase-shifted per lane so a row doesn't move in lockstep.
+    final bob = sin(_time * 5 + lane) * size.y * 0.06;
+    canvas.save();
+    canvas.translate(0, -size.y * 0.32 + bob);
     if (!isSafe) paintFlag(canvas);
     paintOutlinedNumber(canvas, '$value', color);
+    canvas.restore();
+  }
+
+  double _time = 0;
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    _time += dt;
   }
 }

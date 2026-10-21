@@ -29,12 +29,17 @@ class HazardComponent extends TrackEntity {
   @override
   void render(Canvas canvas) {
     if (size.x < 4) return;
-    final center = Offset(size.x / 2, size.y / 2);
     final r = size.x / 2;
-
-    canvas.drawCircle(center, r * 0.55, Paint()..color = const Color(0xFF9CA3AF));
+    paintShadow(canvas, widthFactor: 0.8);
+    // Upright saw blade standing on the road on a small base.
+    final center = Offset(size.x / 2, groundLocalY - r * 0.95);
+    canvas.drawRect(
+      Rect.fromCenter(center: Offset(size.x / 2, groundLocalY - r * 0.2), width: r * 0.9, height: r * 0.4),
+      Paint()..color = const Color(0xFF4B5563),
+    );
 
     final spikePaint = Paint()..color = const Color(0xFFDC2626);
+    canvas.drawCircle(center, r * 0.62, Paint()..color = const Color(0xFF991B1B));
     const spikeCount = 8;
     for (int i = 0; i < spikeCount; i++) {
       final a = _spin + i * (2 * pi / spikeCount);
@@ -48,5 +53,17 @@ class HazardComponent extends TrackEntity {
         ..close();
       canvas.drawPath(path, spikePaint);
     }
+    // Metallic hub drawn over the spikes' bases.
+    canvas.drawCircle(
+      center,
+      r * 0.5,
+      Paint()
+        ..shader = Gradient.radial(
+          center - Offset(r * 0.15, r * 0.15),
+          r * 0.6,
+          const [Color(0xFFF3F4F6), Color(0xFF6B7280)],
+        ),
+    );
+    canvas.drawCircle(center, r * 0.14, Paint()..color = const Color(0xFF374151));
   }
 }

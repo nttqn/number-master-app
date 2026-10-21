@@ -129,4 +129,14 @@ void main() {
         rows.where((r) => r.lanes.whereType<HazardContent>().isNotEmpty).length;
     expect(hazardRows(high.rows) / high.rows.length, greaterThanOrEqualTo(hazardRows(low.rows) / low.rows.length));
   });
+
+  test('bonus stair step cost is always at least 1 and scales up with level', () {
+    for (int level = 1; level <= 40; level++) {
+      expect(LevelGenerator.generate(level).stairStepCost, greaterThanOrEqualTo(1), reason: 'level $level');
+    }
+    expect(
+      LevelGenerator.generate(30).stairStepCost,
+      greaterThan(LevelGenerator.generate(1).stairStepCost),
+    );
+  });
 }

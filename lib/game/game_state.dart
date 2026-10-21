@@ -3,6 +3,13 @@ enum GameState {
   levelIntro,
   running,
   wallSequence,
+
+  /// After the last wall: smashing x2..x10 multiplier steps.
+  bonusStairs,
+
+  /// Brief beat after the staircase ends, before the level-complete
+  /// overlay, so the last smash/stop is visible.
+  bonusDone,
   paused,
   levelComplete,
   gameOver,

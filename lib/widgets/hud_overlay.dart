@@ -45,14 +45,25 @@ class HudOverlay extends StatelessWidget {
                     valueListenable: game.stateNotifier,
                     builder: (context, state, _) => ValueListenableBuilder<int>(
                       valueListenable: game.wallsRemainingNotifier,
-                      builder: (context, walls, __) => Text(
-                        state == GameState.wallSequence
-                            ? 'Break through! $walls wall${walls == 1 ? '' : 's'} left'
-                            : 'Level ${game.level}',
-                        style: TextStyle(
-                          color: state == GameState.wallSequence ? Colors.amberAccent : Colors.white70,
-                          fontSize: 14,
-                        ),
+                      builder: (context, walls, __) => ValueListenableBuilder<int>(
+                        valueListenable: game.multiplierNotifier,
+                        builder: (context, multiplier, ___) {
+                          final bonus = state == GameState.bonusStairs || state == GameState.bonusDone;
+                          final highlight = bonus || state == GameState.wallSequence;
+                          return Text(
+                            bonus
+                                ? 'BONUS x$multiplier'
+                                : state == GameState.wallSequence
+                                ? 'Break through! $walls wall${walls == 1 ? '' : 's'} left'
+                                : 'Level ${game.level}',
+                            style: TextStyle(
+                              color: highlight ? Colors.amberAccent : Colors.white70,
+                              fontSize: bonus ? 20 : 14,
+                              fontWeight: bonus ? FontWeight.w900 : FontWeight.normal,
+                              shadows: const [Shadow(color: Colors.black54, blurRadius: 4)],
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),

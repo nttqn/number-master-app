@@ -26,13 +26,22 @@ class LevelCompleteOverlay extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Leftover number: ${game.player.number}',
+              'BONUS x${game.multiplierNotifier.value}',
+              style: TextStyle(
+                color: AppPalette.stairColors[(game.multiplierNotifier.value - 2).clamp(0, AppPalette.stairColors.length - 1)],
+                fontSize: 40,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Number: ${game.bonusNumber}',
               style: const TextStyle(color: Colors.white70, fontSize: 18),
             ),
             const SizedBox(height: 8),
             Text(
-              '+${Economy.coinsForRun(game.player.number, SaveService.instance.incomeMultiplier)} coins',
-              style: const TextStyle(color: Colors.amberAccent, fontSize: 16, fontWeight: FontWeight.bold),
+              '+${Economy.coinsForRun(game.bonusNumber, SaveService.instance.incomeMultiplier) * game.multiplierNotifier.value} coins',
+              style: const TextStyle(color: Colors.amberAccent, fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
