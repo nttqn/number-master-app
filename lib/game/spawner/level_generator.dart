@@ -65,21 +65,22 @@ class LevelGenerator {
       walls: wallResult.walls,
       trackSpeed: params.trackSpeed,
       runLength: runLength,
-      stairStepCost: _stairStepCost(worstCase, bestCase, wallResult.walls),
+      stairStepCost: _stairStepCost(bestCase, wallResult.walls),
     );
   }
 
-  /// Per-step cost of the bonus staircase, from what a worst-case and a
-  /// best-case run would have left after the walls. Their geometric mean
-  /// stands in for a "middling" run (bestCase can be orders of magnitude
-  /// above worstCase once multiply gates appear, so an arithmetic mean
-  /// would make every real run look bad); dividing it by 5 lets that run
-  /// reach about x6.
-  static int _stairStepCost(double worstCase, double bestCase, List<WallSpec> walls) {
+  /// Per-step cost of the bonus staircase: a tenth of what a best-case
+  /// (always-take-the-best-lane) run would have left after the walls, so
+  /// all 9 steps (x10) take ~90% of perfect play and a run that collected
+  /// half the possible number reaches about x6.
+  ///
+  /// Not based on the worst case: walls are sized to eat ~90% of it, so
+  /// the worst-case leftover is almost always ~1 — an earlier formula
+  /// using it made steps cost 2-3 on early levels and every real run
+  /// cleared all of them.
+  static int _stairStepCost(double bestCase, List<WallSpec> walls) {
     final wallTotal = walls.fold<int>(0, (sum, w) => sum + w.value);
-    final worstLeft = max(1.0, worstCase - wallTotal);
-    final bestLeft = max(worstLeft, bestCase - wallTotal);
-    return max(1, (sqrt(worstLeft * bestLeft) / 5).ceil());
+    return max(1, ((bestCase - wallTotal) / 10).ceil());
   }
 
   /// Builds rows normally, force-fixes any row that still isn't fair
@@ -120,7 +121,7 @@ class LevelGenerator {
       walls: walls,
       trackSpeed: params.trackSpeed,
       runLength: runLength,
-      stairStepCost: _stairStepCost(_simulateWorstCase(rows), _simulateBestCase(rows), walls),
+      stairStepCost: _stairStepCost(_simulateBestCase(rows), walls),
     );
   }
 

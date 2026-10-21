@@ -50,8 +50,10 @@ The user found the game visually flat and the gameplay dull. Changes:
   translate in `render`).
 - **Bonus staircase** after the walls: `StairStepComponent` x2..x10 (shares
   `FullWidthBlock` with `WallComponent`), spawned lazily by `LevelRuntime`.
-  Each step costs `GeneratedLevel.stairStepCost` (geometric mean of worst/
-  best leftover after walls ÷ 5). Running out ends the bonus, never a game
+  Each step costs `GeneratedLevel.stairStepCost` = best-case leftover after
+  walls ÷ 10 (x10 needs ~90% of perfect play). A first version used the
+  worst-case leftover, which is ~1 by design (walls eat ~90% of it), so
+  steps cost 2-3 and the user reached x10 every time on early levels. Running out ends the bonus, never a game
   over. Coins on a clear = `coinsForRun(bonusNumber) × multiplier`, where
   `bonusNumber` is the number carried out of the walls.
 

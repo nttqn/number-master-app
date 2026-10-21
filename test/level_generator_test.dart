@@ -139,4 +139,12 @@ void main() {
       greaterThan(LevelGenerator.generate(1).stairStepCost),
     );
   });
+
+  test('early levels: bonus steps are not trivially cheap', () {
+    // Regression: a worst-case-based cost made steps cost 2-3 here, so
+    // every real run reached x10.
+    for (int level = 1; level <= 5; level++) {
+      expect(LevelGenerator.generate(level).stairStepCost, greaterThanOrEqualTo(5), reason: 'level $level');
+    }
+  });
 }
