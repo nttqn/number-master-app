@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../game/cosmetics.dart';
 import '../game/economy.dart';
 
 /// Persists progress across app restarts: highest unlocked level, the best
@@ -24,9 +25,26 @@ class SaveService {
   static const _startNumberLevelKey = 'nm_start_number_level';
   static const _incomeLevelKey = 'nm_income_level';
 
+  static const _ownedSkinsKey = 'nm_owned_skins';
+  static const _selectedSkinKey = 'nm_selected_skin';
+  static const _ownedTrailsKey = 'nm_owned_trails';
+  static const _selectedTrailKey = 'nm_selected_trail';
+
   final ValueNotifier<int> coinsNotifier = ValueNotifier(0);
   final ValueNotifier<int> startNumberLevelNotifier = ValueNotifier(0);
   final ValueNotifier<int> incomeLevelNotifier = ValueNotifier(0);
+
+  /// Highest unlocked level, cached for the shop's per-item unlock gates.
+  final ValueNotifier<int> unlockedLevelNotifier = ValueNotifier(1);
+
+  /// Cosmetics. Owned sets always include the free defaults.
+  final ValueNotifier<Set<PlayerSkin>> ownedSkinsNotifier = ValueNotifier({PlayerSkin.cube});
+  final ValueNotifier<PlayerSkin> selectedSkinNotifier = ValueNotifier(PlayerSkin.cube);
+  final ValueNotifier<Set<PlayerTrail>> ownedTrailsNotifier = ValueNotifier({PlayerTrail.none});
+  final ValueNotifier<PlayerTrail> selectedTrailNotifier = ValueNotifier(PlayerTrail.none);
+
+  PlayerSkin get selectedSkin => selectedSkinNotifier.value;
+  PlayerTrail get selectedTrail => selectedTrailNotifier.value;
 
   bool _economyLoaded = false;
 
@@ -44,7 +62,76 @@ class SaveService {
       coinsNotifier.value = prefs.getInt(_coinsKey) ?? 0;
       startNumberLevelNotifier.value = prefs.getInt(_startNumberLevelKey) ?? 0;
       incomeLevelNotifier.value = prefs.getInt(_incomeLevelKey) ?? 0;
+      unlockedLevelNotifier.value = prefs.getInt(_unlockedLevelKey) ?? 1;
+      ownedSkinsNotifier.value = {
+        PlayerSkin.cube,
+        ...?prefs.getStringList(_ownedSkinsKey)?.map(PlayerSkin.byName),
+      };
+      ownedTrailsNotifier.value = {
+        PlayerTrail.none,
+        ...?prefs.getStringList(_ownedTrailsKey)?.map(PlayerTrail.byName),
+      };
+      final skin = PlayerSkin.byName(prefs.getString(_selectedSkinKey));
+      selectedSkinNotifier.value = ownedSkinsNotifier.value.contains(skin) ? skin : PlayerSkin.cube;
+      final trail = PlayerTrail.byName(prefs.getString(_selectedTrailKey));
+      selectedTrailNotifier.value = ownedTrailsNotifier.value.contains(trail) ? trail : PlayerTrail.none;
     } catch (_) {}
+  }
+
+  Future<void> _persistCosmetics() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_ownedSkinsKey, ownedSkinsNotifier.value.map((s) => s.name).toList());
+      await prefs.setString(_selectedSkinKey, selectedSkin.name);
+      await prefs.setStringList(_ownedTrailsKey, ownedTrailsNotifier.value.map((t) => t.name).toList());
+      await prefs.setString(_selectedTrailKey, selectedTrail.name);
+    } catch (_) {}
+  }
+
+  /// Buys [skin] (if affordable and unlocked) and equips it. Returns
+  /// whether it was bought.
+  Future<bool> buySkin(PlayerSkin skin) async {
+    await loadEconomy();
+    if (ownedSkinsNotifier.value.contains(skin)) return false;
+    if (coins < skin.price || unlockedLevelNotifier.value < skin.unlockLevel) return false;
+    coinsNotifier.value -= skin.price;
+    ownedSkinsNotifier.value = {...ownedSkinsNotifier.value, skin};
+    selectedSkinNotifier.value = skin;
+    unawaited(_persistEconomy());
+    unawaited(_persistCosmetics());
+    return true;
+  }
+
+  void selectSkin(PlayerSkin skin) {
+    if (!ownedSkinsNotifier.value.contains(skin)) return;
+    selectedSkinNotifier.value = skin;
+    unawaited(_persistCosmetics());
+  }
+
+  Future<bool> buyTrail(PlayerTrail trail) async {
+    await loadEconomy();
+    if (ownedTrailsNotifier.value.contains(trail)) return false;
+    if (coins < trail.price || unlockedLevelNotifier.value < trail.unlockLevel) return false;
+    coinsNotifier.value -= trail.price;
+    ownedTrailsNotifier.value = {...ownedTrailsNotifier.value, trail};
+    selectedTrailNotifier.value = trail;
+    unawaited(_persistEconomy());
+    unawaited(_persistCosmetics());
+    return true;
+  }
+
+  void selectTrail(PlayerTrail trail) {
+    if (!ownedTrailsNotifier.value.contains(trail)) return;
+    selectedTrailNotifier.value = trail;
+    unawaited(_persistCosmetics());
+  }
+
+  /// Flat coin grant — the rewarded-ad "x2" on level complete pays the
+  /// run's coins a second time through this.
+  Future<void> addCoins(int amount) async {
+    await loadEconomy();
+    coinsNotifier.value += amount;
+    unawaited(_persistEconomy());
   }
 
   Future<void> _persistEconomy() async {
@@ -101,6 +188,7 @@ class SaveService {
       final current = prefs.getInt(_unlockedLevelKey) ?? 1;
       if (level > current) {
         await prefs.setInt(_unlockedLevelKey, level);
+        unlockedLevelNotifier.value = level;
       }
     } catch (_) {}
   }

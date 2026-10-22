@@ -1,16 +1,15 @@
 import 'dart:math';
-import 'dart:ui' hide TextStyle;
+import 'dart:ui';
 
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flutter/animation.dart' show Curves;
-import 'package:flutter/painting.dart' show TextPainter, TextSpan, TextStyle, FontWeight;
 
 import '../../models/lane.dart';
-import '../../theme/palette.dart';
+import '../../services/save_service.dart';
 import '../game_state.dart';
 import '../number_master_game.dart';
-import 'text_fit.dart';
+import '../skin_painter.dart';
 
 /// The player: fixed at the ground plane (distance 0). Its x position
 /// follows the drag gesture 1:1 while the finger is down (clamped to the
@@ -102,9 +101,9 @@ class PlayerComponent extends PositionComponent with HasGameReference<NumberMast
   /// bigger reads at a glance, capped so it never covers its neighbors.
   double get _growth => (1 + 0.07 * log(max(1, number)) / ln2).clamp(1.0, 1.5);
 
-  Color get _bodyColor {
-    final tier = (log(max(1, number)) / ln2).floor();
-    return AppPalette.playerTiers[tier.clamp(0, AppPalette.playerTiers.length - 1)];
+  bool get isMoving {
+    final s = game.stateNotifier.value;
+    return s == GameState.running || s == GameState.wallSequence || s == GameState.bonusStairs;
   }
 
   @override
@@ -119,74 +118,14 @@ class PlayerComponent extends PositionComponent with HasGameReference<NumberMast
     final w = size.x;
     final ground = size.y * 0.62;
     // A small running hop, only while the track is actually moving.
-    final moving = game.stateNotifier.value == GameState.running ||
-        game.stateNotifier.value == GameState.wallSequence ||
-        game.stateNotifier.value == GameState.bonusStairs;
-    final hop = moving ? sin(_time * 14).abs() * w * 0.06 : 0.0;
+    final hop = isMoving ? sin(_time * 14).abs() * w * 0.06 : 0.0;
 
     canvas.drawOval(
       Rect.fromCenter(center: Offset(w / 2, ground), width: w * (0.95 - hop / w), height: w * 0.22),
       Paint()..color = const Color(0x40000000),
     );
-
-    final body = _bodyColor;
-    final frontW = w * 0.86;
-    final frontH = w * 0.6;
-    final topH = w * 0.24;
-    final left = (w - frontW) / 2;
-    final bottom = ground - hop;
-    final front = Rect.fromLTWH(left, bottom - frontH, frontW, frontH);
-
-    // Top face: a trapezoid narrowing away from the camera.
-    final inset = w * 0.07;
-    final topFace = Path()
-      ..moveTo(front.left, front.top)
-      ..lineTo(front.left + inset, front.top - topH)
-      ..lineTo(front.right - inset, front.top - topH)
-      ..lineTo(front.right, front.top)
-      ..close();
-    canvas.drawPath(topFace, Paint()..color = Color.lerp(body, const Color(0xFFFFFFFF), 0.4)!);
-
-    canvas.drawRRect(
-      RRect.fromRectAndCorners(front, bottomLeft: Radius.circular(w * 0.08), bottomRight: Radius.circular(w * 0.08)),
-      Paint()
-        ..shader = Gradient.linear(
-          front.topCenter,
-          front.bottomCenter,
-          [body, Color.lerp(body, const Color(0xFF000000), 0.25)!],
-        ),
-    );
-    // Glossy highlight strip along the front face's top edge.
-    canvas.drawRect(
-      Rect.fromLTWH(front.left, front.top, frontW, frontH * 0.14),
-      Paint()..color = const Color(0x33FFFFFF),
-    );
-
-    final text = '$number';
-    // Shrink-to-fit and force a single line — a fixed font size wrapped a
-    // long number onto two lines that spilled outside the body.
-    final fontSize = fitFontSize(textLength: text.length, desiredFontSize: w * 0.36, maxWidth: frontW * 0.88);
-    final style = TextStyle(fontSize: fontSize, fontWeight: FontWeight.w900);
-    final stroke = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: style.copyWith(
-          foreground: Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = fontSize * 0.14
-            ..color = const Color(0x99000000),
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-    )..layout();
-    final fill = TextPainter(
-      text: TextSpan(text: text, style: style.copyWith(color: const Color(0xFFFFFFFF))),
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-    )..layout();
-    final offset = Offset(w / 2 - fill.width / 2, front.center.dy - fill.height / 2);
-    stroke.paint(canvas, offset);
-    fill.paint(canvas, offset);
+    // Read live so a skin picked in the shop (reachable from pause) shows
+    // as soon as play resumes.
+    paintPlayerSkin(canvas, w: w, ground: ground, hop: hop, skin: SaveService.instance.selectedSkin, number: number);
   }
 }

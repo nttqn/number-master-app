@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-/// Wraps AdMob banner + interstitial ads behind Google's official TEST ad
+/// Wraps AdMob banner + interstitial + rewarded ads behind Google's official TEST ad
 /// unit IDs. Swap these for real AdMob IDs before publishing — see
 /// README.md.
 ///
@@ -15,12 +17,70 @@ class AdsService {
   static const String bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
   static const String interstitialAdUnitId = 'ca-app-pub-3940256099942544/1033173712';
 
+  /// Rewarded: "x2 coins" on level complete.
+  static const String rewardedAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
+
   InterstitialAd? _interstitialAd;
+  RewardedAd? _rewarded;
+  bool _rewardedLoading = false;
+
+  /// Whether a rewarded ad is loaded and can be offered right now — the
+  /// x2 button only appears while this is true.
+  final ValueNotifier<bool> rewardedReady = ValueNotifier(false);
 
   Future<void> initialize() async {
     if (kIsWeb) return;
     await MobileAds.instance.initialize();
     _loadInterstitial();
+    _loadRewarded();
+  }
+
+  void _loadRewarded() {
+    if (kIsWeb || _rewarded != null || _rewardedLoading) return;
+    _rewardedLoading = true;
+    RewardedAd.load(
+      adUnitId: rewardedAdUnitId,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          _rewardedLoading = false;
+          _rewarded = ad;
+          rewardedReady.value = true;
+        },
+        onAdFailedToLoad: (_) {
+          _rewardedLoading = false;
+          rewardedReady.value = false;
+          // No fill is common; try again a little later.
+          Timer(const Duration(seconds: 45), _loadRewarded);
+        },
+      ),
+    );
+  }
+
+  /// Plays a rewarded ad. [onReward] runs only if the player watched it
+  /// through; [onDone] always runs once the ad is gone (or couldn't show).
+  void showRewarded({required VoidCallback onReward, required VoidCallback onDone}) {
+    final ad = _rewarded;
+    if (ad == null) {
+      onDone();
+      _loadRewarded();
+      return;
+    }
+    _rewarded = null;
+    rewardedReady.value = false;
+    ad.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _loadRewarded();
+        onDone();
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        ad.dispose();
+        _loadRewarded();
+        onDone();
+      },
+    );
+    ad.show(onUserEarnedReward: (_, _) => onReward());
   }
 
   BannerAd? createBannerAd({required void Function() onLoaded}) {

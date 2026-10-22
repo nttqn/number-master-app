@@ -14,7 +14,7 @@ lib/
   main.dart, app.dart          # Entry point, MaterialApp
   models/                      # GateOperation, lane helpers
   services/
-    ads_service.dart            # AdMob banner + interstitial (test IDs — see below)
+    ads_service.dart            # AdMob banner + interstitial + rewarded (test IDs — see below)
     sound_service.dart          # flame_audio AudioPool wrapper, safe with missing WAVs
     save_service.dart           # shared_preferences: unlocked level, best number, coins + upgrade levels
   screens/
@@ -120,7 +120,7 @@ it under `assets/audio/`, no code changes needed.
 ## Before publishing to Google Play — checklist
 
 1. **Real AdMob account** — register at https://admob.google.com, create a
-   Banner and an Interstitial ad unit, replace the test IDs in
+   Banner, an Interstitial and a Rewarded ad unit, replace the test IDs in
    [lib/services/ads_service.dart](lib/services/ads_service.dart), and add
    the app's AdMob **App ID** as the `ADMOB_APP_ID` GitHub secret.
 2. **Release signing** — generate a keystore and add `KEYSTORE_BASE64`,

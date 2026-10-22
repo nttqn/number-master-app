@@ -10,6 +10,7 @@ import '../services/sound_service.dart';
 import '../theme/palette.dart';
 import 'components/floating_text.dart';
 import 'components/player_component.dart';
+import 'components/trail_component.dart';
 import 'components/wall_break_effect.dart';
 import 'components/wall_component.dart';
 import 'game_state.dart';
@@ -104,6 +105,7 @@ class NumberMasterGame extends FlameGame {
     await add(RoadComponent()..priority = Layers.road);
     player = PlayerComponent()..priority = Layers.player;
     await add(player);
+    await add(TrailComponent()..priority = Layers.player - 1);
     _startLevel();
   }
 
