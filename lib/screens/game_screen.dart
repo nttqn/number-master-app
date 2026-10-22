@@ -6,6 +6,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../game/number_master_game.dart';
 import '../services/ads_service.dart';
+import '../services/music_service.dart';
 import '../services/save_service.dart';
 import '../theme/palette.dart';
 import '../widgets/game_over_overlay.dart';
@@ -35,6 +36,7 @@ class _GameScreenState extends State<GameScreen> {
     super.initState();
     _level = widget.startLevel;
     _game = _buildGame();
+    MusicService.instance.playGame();
     _bannerAd = AdsService.instance.createBannerAd(onLoaded: () {
       if (mounted) setState(() => _bannerLoaded = true);
     });

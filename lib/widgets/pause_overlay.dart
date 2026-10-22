@@ -4,6 +4,7 @@ import '../game/number_master_game.dart';
 import '../screens/shop_screen.dart';
 import '../services/sound_service.dart';
 import '../theme/palette.dart';
+import 'audio_toggles.dart';
 
 class PauseOverlay extends StatelessWidget {
   const PauseOverlay({super.key, required this.game});
@@ -44,17 +45,7 @@ class PauseOverlay extends StatelessWidget {
               label: const Text('Shop'),
             ),
             const SizedBox(height: 12),
-            ValueListenableBuilder<bool>(
-              valueListenable: SoundService.instance.enabledNotifier,
-              builder: (context, enabled, _) => TextButton.icon(
-                onPressed: SoundService.instance.toggleEnabled,
-                icon: Icon(enabled ? Icons.volume_up : Icons.volume_off, color: AppPalette.menuTextAccent),
-                label: Text(
-                  enabled ? 'Sound On' : 'Sound Off',
-                  style: const TextStyle(color: AppPalette.menuTextAccent, fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+            const AudioToggles(),
             const SizedBox(height: 12),
             TextButton(
               onPressed: () {

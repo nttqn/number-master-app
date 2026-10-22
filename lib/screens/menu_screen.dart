@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../services/music_service.dart';
 import '../services/save_service.dart';
 import '../services/sound_service.dart';
 import '../theme/palette.dart';
+import '../widgets/audio_toggles.dart';
 import 'game_screen.dart';
 import 'shop_screen.dart';
 
@@ -19,6 +21,7 @@ class _MenuScreenState extends State<MenuScreen> {
   @override
   void initState() {
     super.initState();
+    MusicService.instance.playMenu();
     SaveService.instance.getUnlockedLevel().then((level) {
       if (mounted) setState(() => _unlockedLevel = level);
     });
@@ -66,9 +69,11 @@ class _MenuScreenState extends State<MenuScreen> {
                   _StartButton(
                     onPressed: () {
                       SoundService.instance.play(SfxEvent.menuConfirm);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => GameScreen(startLevel: _unlockedLevel)),
-                      );
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(builder: (_) => GameScreen(startLevel: _unlockedLevel)))
+                          // GameScreen switched to the game track on the
+                          // way in — switch back on return.
+                          .then((_) => MusicService.instance.playMenu());
                     },
                   ),
                   const SizedBox(height: 12),
@@ -88,21 +93,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     label: const Text('SHOP'),
                   ),
                   const SizedBox(height: 16),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: SoundService.instance.enabledNotifier,
-                    builder: (context, enabled, _) => TextButton.icon(
-                      onPressed: SoundService.instance.toggleEnabled,
-                      icon: Icon(enabled ? Icons.volume_up : Icons.volume_off, color: AppPalette.menuTextAccent),
-                      label: Text(
-                        enabled ? 'Sound On' : 'Sound Off',
-                        style: const TextStyle(
-                          color: AppPalette.menuTextAccent,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
+                  const AudioToggles(),
                   const Spacer(),
                 ],
               ),

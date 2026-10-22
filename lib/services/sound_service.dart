@@ -49,6 +49,22 @@ class SoundService {
     final prefs = await SharedPreferences.getInstance();
     enabledNotifier.value = prefs.getBool(_prefsKey) ?? true;
 
+    try {
+      // By default every audioplayers player requests Android audio focus
+      // on start, which pauses whichever player had it — so each effect
+      // would cut out MusicService's looping track. Nothing here needs
+      // exclusive focus. Must run before the pools below are created so
+      // they inherit it.
+      await AudioPlayer.global.setAudioContext(
+        AudioContext(
+          android: const AudioContextAndroid(audioFocus: AndroidAudioFocus.none),
+          iOS: AudioContextIOS(category: AVAudioSessionCategory.ambient),
+        ),
+      );
+    } catch (_) {
+      // Worst case effects still play, just with focus-stealing behavior.
+    }
+
     for (final event in SfxEvent.values) {
       try {
         // A missing/invalid asset can leave the underlying platform
