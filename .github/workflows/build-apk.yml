@@ -59,12 +59,20 @@ jobs:
       # plugins need, so force explicit values here. Handles both the
       # Groovy (build.gradle) and Kotlin DSL (build.gradle.kts) templates
       # since Flutter has changed the default over time.
-      - name: Raise minSdk/compileSdk for plugin compatibility
+      #
+      # Also sets the real applicationId: `flutter create` derives it from
+      # --org + --project-name as com.trungsmail.number_master, but the
+      # Play Console app (and its Play Games credentials) were registered
+      # as com.trungsmail.numbermaster. Only applicationId changes — the
+      # Kotlin namespace/MainActivity package can stay as generated.
+      - name: Raise minSdk/compileSdk + set applicationId
         run: |
           set -e
           for f in android/app/build.gradle android/app/build.gradle.kts; do
             if [ -f "$f" ]; then
               echo "Patching $f"
+              sed -i -E 's/(applicationId( =)? *")com\.trungsmail\.number_master"/\1com.trungsmail.numbermaster"/' "$f"
+              grep -q 'applicationId.*"com.trungsmail.numbermaster"' "$f" || { echo "::error::applicationId patch failed"; grep -n applicationId "$f"; exit 1; }
               if [[ "$f" == *.kts ]]; then
                 sed -i -E 's/minSdk( )?=.*/minSdk = 24/' "$f"
                 sed -i -E 's/compileSdk( )?=.*/compileSdk = 36/' "$f"

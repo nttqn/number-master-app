@@ -127,8 +127,11 @@ it under `assets/audio/`, no code changes needed.
    `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` as GitHub secrets (same
    flow as every other app in this series). Without them, CI stays
    debug-signed (fine for sideloading, not for a Play Store upload).
-3. **Package name** — currently `com.trungsmail.numbermaster` (`--org
-   com.trungsmail` in `build-apk.yml`); change there if needed.
+3. **Package name** — `com.trungsmail.numbermaster`, registered on Play
+   Console and in the Play Games credentials. `flutter create` alone would
+   produce `com.trungsmail.number_master`, so `build-apk.yml` patches
+   `applicationId` after generating `android/` (and fails the build if
+   that patch doesn't apply). Never change it after the first upload.
 4. **Icon** — replace `assets/icon/icon.png` (a placeholder generated via
    PowerShell + System.Drawing, no real art yet).
 5. **Play Games Services / leaderboard** — not wired up yet in this
