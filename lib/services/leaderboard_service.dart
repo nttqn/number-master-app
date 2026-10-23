@@ -5,11 +5,11 @@ import 'package:games_services/games_services.dart';
 /// iOS build for this game).
 enum Board {
   /// Highest level cleared.
-  highestLevel('REPLACE_HIGHEST_LEVEL_ID'),
+  highestLevel('CgkIhc2n1OMREAIQAg'),
 
   /// Largest number reached in a single run (peak, before walls/stairs
   /// spend it).
-  biggestNumber('REPLACE_BIGGEST_NUMBER_ID');
+  biggestNumber('CgkIhc2n1OMREAIQAw');
 
   const Board(this.androidId);
 
