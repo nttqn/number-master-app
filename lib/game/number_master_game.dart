@@ -82,9 +82,14 @@ class NumberMasterGame extends FlameGame {
   double scrolled = 0;
 
   final ValueNotifier<GameState> stateNotifier = ValueNotifier(GameState.levelIntro);
-  final ValueNotifier<int> numberNotifier = ValueNotifier(1);
+  late final ValueNotifier<int> numberNotifier = ValueNotifier(1)
+    ..addListener(() => peakNumber = max(peakNumber, numberNotifier.value));
   final ValueNotifier<int> wallsRemainingNotifier = ValueNotifier(0);
   final ValueNotifier<int> multiplierNotifier = ValueNotifier(1);
+
+  /// Largest number held at any point this run (walls and the bonus stairs
+  /// spend it down afterwards) — the "Biggest Number" leaderboard value.
+  int peakNumber = 0;
 
   /// The number the player walked out of the wall sequence with — coins
   /// are paid on this times the bonus multiplier, even though climbing the

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/leaderboard_service.dart';
 import '../services/music_service.dart';
 import '../services/save_service.dart';
 import '../services/sound_service.dart';
@@ -94,6 +95,21 @@ class _MenuScreenState extends State<MenuScreen> {
                   ),
                   const SizedBox(height: 16),
                   const AudioToggles(),
+                  TextButton.icon(
+                    onPressed: () async {
+                      SoundService.instance.play(SfxEvent.menuConfirm);
+                      final messenger = ScaffoldMessenger.of(context);
+                      final opened = await LeaderboardService.showAll();
+                      if (!opened) {
+                        messenger.showSnackBar(const SnackBar(content: Text('Leaderboard not available yet.')));
+                      }
+                    },
+                    icon: const Icon(Icons.emoji_events, color: AppPalette.menuTextAccent),
+                    label: const Text(
+                      'Leaderboard',
+                      style: TextStyle(color: AppPalette.menuTextAccent, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                   const Spacer(),
                 ],
               ),

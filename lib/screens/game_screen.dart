@@ -6,6 +6,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../game/number_master_game.dart';
 import '../services/ads_service.dart';
+import '../services/leaderboard_service.dart';
 import '../services/music_service.dart';
 import '../services/save_service.dart';
 import '../theme/palette.dart';
@@ -37,6 +38,7 @@ class _GameScreenState extends State<GameScreen> {
     _level = widget.startLevel;
     _game = _buildGame();
     MusicService.instance.playGame();
+    unawaited(LeaderboardService.signIn());
     _bannerAd = AdsService.instance.createBannerAd(onLoaded: () {
       if (mounted) setState(() => _bannerLoaded = true);
     });
@@ -47,11 +49,14 @@ class _GameScreenState extends State<GameScreen> {
       level: _level,
       startNumberBonus: SaveService.instance.startNumberBonus,
       onGameOver: (level, finalNumber) {
+        unawaited(LeaderboardService.submit(Board.biggestNumber, _game.peakNumber));
         unawaited(SaveService.instance.recordBestNumber(level, finalNumber));
         unawaited(SaveService.instance.awardCoins(level: level, finalNumber: finalNumber, cleared: false));
         AdsService.instance.maybeShowInterstitial();
       },
       onLevelComplete: (level, bonusNumber, multiplier) {
+        unawaited(LeaderboardService.submit(Board.highestLevel, level));
+        unawaited(LeaderboardService.submit(Board.biggestNumber, _game.peakNumber));
         unawaited(SaveService.instance.recordBestNumber(level, bonusNumber));
         unawaited(SaveService.instance.unlockLevel(level + 1));
         unawaited(
