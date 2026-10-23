@@ -57,6 +57,14 @@ The user found the game visually flat and the gameplay dull. Changes:
   over. Coins on a clear = `coinsForRun(bonusNumber) × multiplier`, where
   `bonusNumber` is the number carried out of the walls.
 
+**Coin economy (2026-10-23)**: coins were `number × 5 × income × bonus`,
+linear in the number. The number grows exponentially (multiply gates), and
+coins buy Start Number, which compounds through the same gates — a tester
+had 84M coins at level 11. `Economy.coinsForRun` is now
+`(20 + 10·level) × (1 + 0.3·log2(number)) × income` (×0.5 on a loss), then
+× the stair multiplier. Roughly 400 coins for a level-1 clear at x5, ~3.3k at
+level 11 — in line with shop prices (skins 1k–15k).
+
 To test the late-level flow in a browser, a temporary
 `--dart-define`-gated god mode (skip `triggerGameOver`, +60 start number)
 was added and removed again — a blind Playwright bot rarely survives to the

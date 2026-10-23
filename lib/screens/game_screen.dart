@@ -48,13 +48,20 @@ class _GameScreenState extends State<GameScreen> {
       startNumberBonus: SaveService.instance.startNumberBonus,
       onGameOver: (level, finalNumber) {
         unawaited(SaveService.instance.recordBestNumber(level, finalNumber));
-        unawaited(SaveService.instance.awardCoins(finalNumber));
+        unawaited(SaveService.instance.awardCoins(level: level, finalNumber: finalNumber, cleared: false));
         AdsService.instance.maybeShowInterstitial();
       },
       onLevelComplete: (level, bonusNumber, multiplier) {
         unawaited(SaveService.instance.recordBestNumber(level, bonusNumber));
         unawaited(SaveService.instance.unlockLevel(level + 1));
-        unawaited(SaveService.instance.awardCoins(bonusNumber, bonusMultiplier: multiplier));
+        unawaited(
+          SaveService.instance.awardCoins(
+            level: level,
+            finalNumber: bonusNumber,
+            cleared: true,
+            bonusMultiplier: multiplier,
+          ),
+        );
         // No interstitial here on purpose — only on game-over. Showing one
         // after every single level-complete was too intrusive.
       },

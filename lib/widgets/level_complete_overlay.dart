@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../game/economy.dart';
 import '../game/number_master_game.dart';
 import '../screens/shop_screen.dart';
 import '../services/ads_service.dart';
@@ -24,8 +23,12 @@ class _LevelCompleteOverlayState extends State<LevelCompleteOverlay> {
 
   NumberMasterGame get game => widget.game;
 
-  int get _earned =>
-      Economy.coinsForRun(game.bonusNumber, SaveService.instance.incomeMultiplier) * game.multiplierNotifier.value;
+  int get _earned => SaveService.instance.coinsForRun(
+    level: game.level,
+    finalNumber: game.bonusNumber,
+    cleared: true,
+    bonusMultiplier: game.multiplierNotifier.value,
+  );
 
   void _watchAdForDouble() {
     setState(() => _adShowing = true);

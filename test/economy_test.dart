@@ -32,9 +32,25 @@ void main() {
     expect(Economy.incomeMultiplier(10), closeTo(2.0, 1e-9));
   });
 
-  test('coinsForRun scales with finalNumber and incomeMultiplier', () {
-    expect(Economy.coinsForRun(10, 1.0), 50);
-    expect(Economy.coinsForRun(10, 2.0), 100);
-    expect(Economy.coinsForRun(0, 1.0), 0);
+  int coins(int level, int number, {double income = 1.0, bool cleared = true}) =>
+      Economy.coinsForRun(level: level, finalNumber: number, incomeMultiplier: income, cleared: cleared);
+
+  test('coinsForRun: base by level, scaled by income, halved on a loss', () {
+    expect(coins(1, 1), 30);
+    expect(coins(1, 1, income: 2.0), 60);
+    expect(coins(1, 1, cleared: false), 15);
+    expect(coins(10, 0), 120); // number below 1 treated as 1
+  });
+
+  test('coinsForRun grows only logarithmically with the number', () {
+    // Doubling the number adds 30% of the base, never doubles the coins.
+    expect(coins(5, 64) - coins(5, 32), closeTo(70 * 0.3, 1));
+    // The reported runaway: level 11, number ~444k used to pay ~2.2M
+    // coins before the bonus multiplier.
+    expect(coins(11, 444538), lessThan(1000));
+  });
+
+  test('coinsForRun rises with level at the same number', () {
+    expect(coins(20, 100), greaterThan(coins(5, 100)));
   });
 }

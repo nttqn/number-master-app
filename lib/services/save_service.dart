@@ -143,12 +143,32 @@ class SaveService {
     } catch (_) {}
   }
 
-  /// Awards coins for a finished run (win or lose) based on [finalNumber]
-  /// and the current income multiplier, times the bonus staircase's
-  /// [bonusMultiplier] on a level clear.
-  Future<void> awardCoins(int finalNumber, {int bonusMultiplier = 1}) async {
+  /// Coins for a finished run (see [Economy.coinsForRun]) at the current
+  /// income multiplier, times the bonus staircase's [bonusMultiplier] on a
+  /// level clear.
+  int coinsForRun({required int level, required int finalNumber, required bool cleared, int bonusMultiplier = 1}) {
+    return Economy.coinsForRun(
+          level: level,
+          finalNumber: finalNumber,
+          incomeMultiplier: incomeMultiplier,
+          cleared: cleared,
+        ) *
+        bonusMultiplier;
+  }
+
+  Future<void> awardCoins({
+    required int level,
+    required int finalNumber,
+    required bool cleared,
+    int bonusMultiplier = 1,
+  }) async {
     await loadEconomy();
-    coinsNotifier.value += Economy.coinsForRun(finalNumber, incomeMultiplier) * bonusMultiplier;
+    coinsNotifier.value += coinsForRun(
+      level: level,
+      finalNumber: finalNumber,
+      cleared: cleared,
+      bonusMultiplier: bonusMultiplier,
+    );
     unawaited(_persistEconomy());
   }
 

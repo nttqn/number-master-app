@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../game/economy.dart';
 import '../game/number_master_game.dart';
 import '../screens/shop_screen.dart';
 import '../services/save_service.dart';
@@ -31,7 +30,7 @@ class GameOverOverlay extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '+${Economy.coinsForRun(game.player.number, SaveService.instance.incomeMultiplier)} coins',
+              '+${SaveService.instance.coinsForRun(level: game.level, finalNumber: game.player.number, cleared: false)} coins',
               style: const TextStyle(color: Colors.amberAccent, fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
