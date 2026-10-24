@@ -117,7 +117,7 @@ class PlayerComponent extends PositionComponent with HasGameReference<NumberMast
   void update(double dt) {
     super.update(dt);
     _time += dt;
-    size = Vector2.all(baseSize * _growth);
+    size = Vector2.all(baseSize * _growth * game.projection.unit);
   }
 
   @override

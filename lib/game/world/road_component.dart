@@ -95,7 +95,7 @@ class RoadComponent extends PositionComponent with HasGameReference<NumberMaster
     // Underside: the road's outline shifted down by a thickness that
     // scales with perspective. Perspective keeps the edges straight lines,
     // so the far and near ends are enough.
-    Offset low(double laneOffset, double d) => pt(laneOffset, d) + Offset(0, 26 * p.roadScaleAt(d));
+    Offset low(double laneOffset, double d) => pt(laneOffset, d) + Offset(0, 26 * p.roadScaleAt(d) * p.unit);
     final underside = Path()
       ..moveTo(low(-outer, _farDistance).dx, low(-outer, _farDistance).dy)
       ..lineTo(low(-outer, _nearDistance).dx, low(-outer, _nearDistance).dy)
@@ -154,7 +154,7 @@ class RoadComponent extends PositionComponent with HasGameReference<NumberMaster
       ..strokeCap = StrokeCap.round;
     final knobPaint = Paint()..color = const Color(0xFFFFD23F);
     for (final (d, id) in posts.reversed) {
-      final s = p.roadScaleAt(d);
+      final s = p.roadScaleAt(d) * p.unit; // post sizes only; positions come from pt()
       final flagPaint = Paint()..color = _flagColors[id % _flagColors.length];
       for (final side in const [-1.0, 1.0]) {
         final base = pt(side * postOffset, d);

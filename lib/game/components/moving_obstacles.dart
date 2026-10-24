@@ -191,7 +191,7 @@ class HoleComponent extends PositionComponent with HasGameReference<NumberMaster
     // The bridge's cut face at the far edge, facing the camera.
     canvas.save();
     canvas.clipPath(hole);
-    final t = 26 * p.roadScaleAt(far);
+    final t = 26 * p.roadScaleAt(far) * p.unit;
     canvas.drawPath(
       Path()
         ..moveTo(fl.dx, fl.dy)
@@ -206,7 +206,7 @@ class HoleComponent extends PositionComponent with HasGameReference<NumberMaster
     final rim = Paint()
       ..color = AppPalette.curbRed
       ..style = PaintingStyle.stroke
-      ..strokeWidth = max(1.5, 4 * p.roadScaleAt(depth));
+      ..strokeWidth = max(1.5, 4 * p.roadScaleAt(depth) * p.unit);
     canvas.drawPath(hole, rim);
   }
 }

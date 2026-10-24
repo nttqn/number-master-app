@@ -17,9 +17,13 @@ import '../widgets/level_complete_overlay.dart';
 import '../widgets/pause_overlay.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.startLevel});
+  const GameScreen({super.key, required this.startLevel, this.onGameCreated});
 
   final int startLevel;
+
+  /// Store-screenshot staging hook (lib/shots.dart): sees each game
+  /// instance as it's built.
+  final void Function(NumberMasterGame game)? onGameCreated;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -37,6 +41,7 @@ class _GameScreenState extends State<GameScreen> {
     super.initState();
     _level = widget.startLevel;
     _game = _buildGame();
+    widget.onGameCreated?.call(_game);
     MusicService.instance.playGame();
     unawaited(LeaderboardService.signIn());
     _bannerAd = AdsService.instance.createBannerAd(onLoaded: () {

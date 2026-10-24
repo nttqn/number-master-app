@@ -40,7 +40,7 @@ abstract class FullWidthBlock extends PositionComponent with HasGameReference<Nu
 
     final p = game.projection;
     final s = p.scaleAt(depth);
-    size = Vector2(p.maxLaneOffsetPx * 2.6 * s, baseHeight * s);
+    size = Vector2(p.maxLaneOffsetPx * 2.6 * s, baseHeight * s * p.unit);
     position = Vector2(p.screenCenterX, p.screenYAt(depth));
     final layer = Layers.forDepth(depth);
     if (priority != layer) priority = layer;

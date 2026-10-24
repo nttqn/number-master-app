@@ -81,6 +81,10 @@ class NumberMasterGame extends FlameGame {
   /// stripes/posts.
   double scrolled = 0;
 
+  /// Store-screenshot staging only (lib/shots.dart): hazards, holes and
+  /// unaffordable walls don't end the run.
+  bool invincible = false;
+
   final ValueNotifier<GameState> stateNotifier = ValueNotifier(GameState.levelIntro);
   late final ValueNotifier<int> numberNotifier = ValueNotifier(1)
     ..addListener(() => peakNumber = max(peakNumber, numberNotifier.value));
@@ -135,6 +139,9 @@ class NumberMasterGame extends FlameGame {
   }
 
   void beginRunning() {
+    // The intro banner calls this when its animation ends; if the run was
+    // already started some other way (shots.dart), don't reset the state.
+    if (stateNotifier.value != GameState.levelIntro) return;
     overlays.remove('levelIntro');
     stateNotifier.value = GameState.running;
     resumeEngine();
@@ -205,7 +212,7 @@ class NumberMasterGame extends FlameGame {
   Vector2 get _aboveHead => player.position - Vector2(0, player.size.y * 0.9);
 
   void _popText(String text, Color color, {double fontSize = 30}) {
-    add(FloatingText(text: text, color: color, position: _aboveHead, fontSize: fontSize)..priority = Layers.effects);
+    add(FloatingText(text: text, color: color, position: _aboveHead, fontSize: fontSize * projection.unit)..priority = Layers.effects);
   }
 
   void _burst(Vector2 at, double scale, Color color) {
@@ -305,7 +312,7 @@ class NumberMasterGame extends FlameGame {
   /// state isn't a moving state), the player shrinks and sinks out of
   /// sight, then the normal game over follows.
   void fallIntoHole() {
-    if (!_isMoving) return;
+    if (!_isMoving || invincible) return;
     stateNotifier.value = GameState.falling;
     // Entities advance by trackSpeed in their own update regardless of
     // state, so freeze it or rows would keep arriving and resolving.
@@ -316,7 +323,7 @@ class NumberMasterGame extends FlameGame {
   }
 
   void triggerGameOver() {
-    if (stateNotifier.value == GameState.gameOver) return;
+    if (invincible || stateNotifier.value == GameState.gameOver) return;
     stateNotifier.value = GameState.gameOver;
     overlays.add('gameOver');
     pauseEngine();

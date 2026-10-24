@@ -206,7 +206,11 @@ class _ItemCard extends StatelessWidget {
           // A childless CustomPaint sizes itself to zero width here unless
           // forced to fill.
           Expanded(child: SizedBox.expand(child: preview)),
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+          // Scales down instead of wrapping in the narrow 4-column grid.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+          ),
           const SizedBox(height: 6),
           SizedBox(
             width: double.infinity,

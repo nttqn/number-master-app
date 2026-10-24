@@ -48,6 +48,13 @@ class Projection {
   double get screenCenterX => screenWidth / 2;
   double get maxLaneOffsetPx => screenWidth * laneSpreadFraction;
 
+  /// Multiplier for every fixed pixel size (entity base sizes, wall
+  /// heights, road thickness, posts, text): the lanes spread with the
+  /// screen width, so on a tablet unscaled entities looked tiny on a huge
+  /// road. 1 on phones (sizes were tuned at ~400 logical px wide), larger
+  /// on wider screens.
+  double get unit => (screenWidth / 400).clamp(1.0, 2.5);
+
   /// Perspective scale factor at [distance], clamped to [0, 1] with a
   /// floor of [minRenderScale].
   double scaleAt(double distance) {
@@ -77,8 +84,9 @@ class Projection {
     return screenCenterX + laneOffset * maxLaneOffsetPx * s;
   }
 
-  /// Scales a base (d=0, full-size) render dimension down for [distance].
+  /// Scales a base (d=0, full-size, phone-width) render dimension for
+  /// [distance] and the screen's [unit].
   double renderSizeAt(double distance, double baseSize) {
-    return baseSize * scaleAt(distance);
+    return baseSize * scaleAt(distance) * unit;
   }
 }
