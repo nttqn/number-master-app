@@ -14,7 +14,7 @@ class AdsService {
   AdsService._();
   static final AdsService instance = AdsService._();
 
-  static const String bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
+  static const String bannerAdUnitId = 'ca-app-pub-9078637596840810/4343210239';
   static const String interstitialAdUnitId = 'ca-app-pub-3940256099942544/1033173712';
 
   /// Rewarded: "x2 coins" on level complete.
