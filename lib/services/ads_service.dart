@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-/// Wraps AdMob banner + interstitial + rewarded ads behind Google's official TEST ad
-/// unit IDs. Swap these for real AdMob IDs before publishing — see
-/// README.md.
+/// Wraps AdMob banner + interstitial + rewarded ads, using the app's real
+/// AdMob ad units (the matching App ID comes from the ADMOB_APP_ID CI
+/// secret). Don't tap ads on your own test devices — register them as
+/// test devices in AdMob instead.
 ///
 /// `google_mobile_ads` only supports Android/iOS, so every entry point
 /// here is a no-op on web/desktop, keeping `flutter run -d chrome`/
@@ -15,7 +16,7 @@ class AdsService {
   static final AdsService instance = AdsService._();
 
   static const String bannerAdUnitId = 'ca-app-pub-9078637596840810/4343210239';
-  static const String interstitialAdUnitId = 'ca-app-pub-3940256099942544/1033173712';
+  static const String interstitialAdUnitId = 'ca-app-pub-9078637596840810/4974473465';
 
   /// Rewarded: "x2 coins" on level complete.
   static const String rewardedAdUnitId = 'ca-app-pub-9078637596840810/2348310122';
