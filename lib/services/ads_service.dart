@@ -18,7 +18,7 @@ class AdsService {
   static const String interstitialAdUnitId = 'ca-app-pub-3940256099942544/1033173712';
 
   /// Rewarded: "x2 coins" on level complete.
-  static const String rewardedAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
+  static const String rewardedAdUnitId = 'ca-app-pub-9078637596840810/2348310122';
 
   InterstitialAd? _interstitialAd;
   RewardedAd? _rewarded;
