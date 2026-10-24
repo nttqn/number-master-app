@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number Master: Math Runner</title>
+<meta name="description" content="Run, do the math and grow your number. Pick the best gates, dodge saws and holes, smash every wall and climb the bonus stairs. Free for Android.">
+<meta property="og:title" content="Number Master: Math Runner">
+<meta property="og:description" content="Pick the best gates, grow your number and smash every wall in your way!">
+<meta property="og:image" content="https://nttqn.github.io/number-master-app/img/og.png">
+<link rel="icon" href="img/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #3e9be0; --sky-light: #bfe6fa; --ink: #1e3a8a; --text: #16233f;
+    --blue: #2d6cdf; --red: #e0293e; --gold: #ffd23f; --orange: #ff5f1f; --road: #f4f6f9;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--road); color: var(--text); line-height: 1.6;
+    font-family: "Baloo 2", -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+  a { color: var(--blue); }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+  .hero { text-align: center; padding: 48px 0 0; overflow: hidden; color: #fff;
+    background: linear-gradient(180deg, var(--sky), var(--sky-light)); }
+  .hero img.icon { width: 112px; height: 112px; border-radius: 26px; box-shadow: 0 10px 24px rgba(16, 40, 90, .3); }
+  .hero h1 { font-size: clamp(42px, 10vw, 84px); font-weight: 800; margin: 14px 0 0; line-height: 1.05;
+    color: #fff; -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 0 6px 0 var(--ink); }
+  .tag { display: inline-block; margin-top: 16px; padding: 4px 18px; border-radius: 999px; font-weight: 800; font-size: 18px;
+    background: linear-gradient(90deg, var(--gold), var(--orange)); color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, .2); }
+  .hero p.lead { max-width: 620px; margin: 18px auto 0; font-size: 20px; font-weight: 700; color: var(--ink); }
+  .play { display: inline-block; margin-top: 24px; padding: 12px 26px; border-radius: 14px; background: #111; color: #fff;
+    text-decoration: none; box-shadow: 0 6px 16px rgba(0, 0, 0, .25); }
+  .play small { display: block; font-size: 13px; opacity: .8; }
+  .play b { font-size: 22px; }
+  .hero .phones { display: flex; gap: 18px; justify-content: center; margin: 40px auto 0; }
+  .hero .phones img { width: min(260px, 42vw); height: auto; border-radius: 26px 26px 0 0;
+    border: 6px solid #fff; border-bottom: 0; box-shadow: 0 -6px 24px rgba(16, 40, 90, .25); }
+  .hero .phones img:nth-child(2) { margin-top: 36px; }
+  .curb { height: 18px; background: repeating-linear-gradient(90deg, #f0455a 0 40px, #fff 40px 80px); }
+
+  section { padding: 56px 0; }
+  section h2 { font-size: clamp(28px, 5vw, 40px); font-weight: 800; color: var(--ink); margin: 0 0 6px; text-align: center; }
+  section > .wrap > p.sub { text-align: center; max-width: 640px; margin: 0 auto 28px; font-size: 18px; }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .card { background: #fff; border-radius: 18px; padding: 18px 20px; box-shadow: 0 4px 14px rgba(30, 58, 138, .1); }
+  .card h3 { margin: 0 0 4px; font-size: 21px; font-weight: 800; }
+  .card p { margin: 0; font-size: 16px; }
+  .card.blue h3 { color: var(--blue); } .card.red h3 { color: var(--red); }
+  .card.gold h3 { color: #c98a00; } .card.purple h3 { color: #8b3fd9; }
+
+  .alt { background: linear-gradient(180deg, #e8f4fd, var(--road)); }
+  .shots { display: flex; gap: 14px; overflow-x: auto; padding: 6px 16px 18px; scroll-snap-type: x mandatory; }
+  .shots img { height: 460px; width: auto; border-radius: 20px; scroll-snap-align: center; flex: none;
+    box-shadow: 0 6px 18px rgba(30, 58, 138, .18); }
+
+  footer { background: var(--ink); color: #dbe7ff; padding: 28px 0; text-align: center; font-size: 15px; }
+  footer a { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <img class="icon" src="img/icon.png" alt="Number Master icon" width="112" height="112">
+    <h1>NUMBER MASTER</h1>
+    <div class="tag">Run. Merge. Break through!</div>
+    <p class="lead">Swipe between lanes, pick the gates that make you bigger, and smash every wall in your way.</p>
+    <a class="play" href="https://play.google.com/store/apps/details?id=com.trungsmail.numbermaster">
+      <small>Free on</small><b>Google Play</b>
+    </a>
+    <div class="phones">
+      <img src="img/01-run-and-grow.jpg" alt="Running and growing the number" width="540" height="1080">
+      <img src="img/05-break-the-walls.jpg" alt="Breaking through the walls" width="540" height="1080">
+    </div>
+  </div>
+</header>
+<div class="curb"></div>
+
+<section>
+  <div class="wrap">
+    <h2>Simple to play</h2>
+    <p class="sub">Swipe left and right to change lanes. That's all it takes, and every choice counts.</p>
+    <div class="grid">
+      <div class="card blue"><h3>Blue gates</h3><p>Add and multiply. Take the best one in reach to grow fast.</p></div>
+      <div class="card red"><h3>Red gates</h3><p>Subtract and divide. Steer around them, or brave them for a big reward behind.</p></div>
+      <div class="card gold"><h3>Loose numbers</h3><p>Smaller than you? Absorb it. Bigger? Touch it and the run is over.</p></div>
+      <div class="card purple"><h3>Walls and stairs</h3><p>Break every wall at the end, then climb the bonus staircase from x2 up to x10 for coins.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <h2>New challenges every few levels</h2>
+    <p class="sub">The bridge gets faster and trickier the further you go.</p>
+    <div class="grid">
+      <div class="card red"><h3>Sliding saws</h3><p>Saws sweep across the best gates. Time your pass to grab the reward.</p></div>
+      <div class="card blue"><h3>Changing gates</h3><p>Gates that flip between good and bad. Hit them at the right moment.</p></div>
+      <div class="card gold"><h3>Holes in the bridge</h3><p>Gaps open up in the road. Don't fall through!</p></div>
+      <div class="card purple"><h3>Skins and trails</h3><p>Six skins and three trails to unlock with your coins, plus upgrades that make every run bigger.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Screenshots</h2>
+  </div>
+  <div class="shots">
+    <img src="img/01-run-and-grow.jpg" alt="Running and growing" width="540" height="1080" loading="lazy">
+    <img src="img/02-sliding-saws.jpg" alt="Sliding saws" width="540" height="1080" loading="lazy">
+    <img src="img/03-changing-gates.jpg" alt="Changing gates" width="540" height="1080" loading="lazy">
+    <img src="img/04-holes.jpg" alt="Holes in the bridge" width="540" height="1080" loading="lazy">
+    <img src="img/05-break-the-walls.jpg" alt="Breaking the walls" width="540" height="1080" loading="lazy">
+    <img src="img/06-bonus-stairs.jpg" alt="Bonus staircase" width="540" height="1080" loading="lazy">
+    <img src="img/07-shop.jpg" alt="Shop with skins and trails" width="540" height="1080" loading="lazy">
+    <img src="img/08-menu.jpg" alt="Main menu" width="540" height="1080" loading="lazy">
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Number Master · <a href="support.html">Support</a> · <a href="privacy.html">Privacy Policy</a><br>
+    Contact: <a href="mailto:trungsmail@gmail.com">trungsmail@gmail.com</a>
+  </div>
+</footer>
+
+</body>
+</html>
