@@ -34,23 +34,18 @@ jobs:
           PLAY_GAMES_APP_ID: ${{ secrets.PLAY_GAMES_APP_ID }}
         run: |
           set -e
-          APP_ID="${ADMOB_APP_ID:-ca-app-pub-3940256099942544~3347511713}"
+          # The real AdMob and Play Games App IDs. Neither is secret (both
+          # ship in every APK's manifest), so they live here, as in the
+          # newer games of this series; the secrets can still override them.
+          APP_ID="${ADMOB_APP_ID:-ca-app-pub-9078637596840810~4299063924}"
+          GAMES_APP_ID="${PLAY_GAMES_APP_ID:-610867472005}"
           MANIFEST=android/app/src/main/AndroidManifest.xml
-          if [ -z "${ADMOB_APP_ID}" ]; then
-            echo "::warning::ADMOB_APP_ID secret not set — using Google's TEST AdMob App ID. Ads will show as test ads only. Set the ADMOB_APP_ID secret before publishing."
-          fi
           sed -i "s#<application#<uses-permission android:name=\"android.permission.INTERNET\"/>\n  <application#" "$MANIFEST"
           sed -i "s#</application>#    <meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"${APP_ID}\"/>\n  </application>#" "$MANIFEST"
           sed -i -E 's/android:label="[^"]*"/android:label="Number Master"/g' "$MANIFEST"
           # Play Games Services needs this meta-data to sign in / submit
-          # scores at all. There's no test ID like AdMob's, so without the
-          # secret the leaderboard just stays non-functional
-          # (LeaderboardService catches every call). Same as block-puzzle-app.
-          if [ -n "${PLAY_GAMES_APP_ID}" ]; then
-            sed -i "s#</application>#    <meta-data android:name=\"com.google.android.gms.games.APP_ID\" android:value=\"${PLAY_GAMES_APP_ID}\"/>\n  </application>#" "$MANIFEST"
-          else
-            echo "::warning::PLAY_GAMES_APP_ID secret not set — the leaderboard (Play Games Services) will not work in this build until it's set."
-          fi
+          # scores at all.
+          sed -i "s#</application>#    <meta-data android:name=\"com.google.android.gms.games.APP_ID\" android:value=\"${GAMES_APP_ID}\"/>\n  </application>#" "$MANIFEST"
           cat "$MANIFEST"
 
       # google_mobile_ads requires minSdk 24+ (and a recent compileSdk).
