@@ -38,13 +38,17 @@ abstract class TrackEntity extends PositionComponent
   static const double resolveDistance = 2.0;
   static const double despawnDistance = -3.0;
 
+  /// Normalized horizontal offset (see LaneOffset) this frame — [lane]'s,
+  /// unless overridden by something that moves across lanes.
+  double get laneOffsetNow => lane.laneOffset;
+
   @override
   void update(double dt) {
     super.update(dt);
     depth -= game.trackSpeed * dt;
 
     final p = game.projection;
-    position = Vector2(p.screenXAt(lane.laneOffset, depth), p.screenYAt(depth));
+    position = Vector2(p.screenXAt(laneOffsetNow, depth), p.screenYAt(depth));
     final s = p.renderSizeAt(depth, baseSize);
     size = Vector2.all(s);
     final layer = Layers.forDepth(depth);

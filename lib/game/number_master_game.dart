@@ -98,6 +98,7 @@ class NumberMasterGame extends FlameGame {
 
   GameState? _pausedFrom;
   double _completeCountdown = -1;
+  double _gameOverCountdown = -1;
 
   final Random _rnd = Random();
   double _shakeTime = 0;
@@ -154,6 +155,10 @@ class NumberMasterGame extends FlameGame {
     if (_completeCountdown >= 0) {
       _completeCountdown -= dt;
       if (_completeCountdown < 0) _completeLevel();
+    }
+    if (_gameOverCountdown >= 0) {
+      _gameOverCountdown -= dt;
+      if (_gameOverCountdown < 0) triggerGameOver();
     }
     if (_shakeTime > 0) {
       _shakeTime -= dt;
@@ -294,6 +299,20 @@ class NumberMasterGame extends FlameGame {
     pauseEngine();
     SoundService.instance.play(SfxEvent.levelComplete);
     onLevelComplete(level, bonusNumber, multiplierNotifier.value);
+  }
+
+  /// Dropped through a hole in the bridge: the track stops (the falling
+  /// state isn't a moving state), the player shrinks and sinks out of
+  /// sight, then the normal game over follows.
+  void fallIntoHole() {
+    if (!_isMoving) return;
+    stateNotifier.value = GameState.falling;
+    // Entities advance by trackSpeed in their own update regardless of
+    // state, so freeze it or rows would keep arriving and resolving.
+    trackSpeed = 0;
+    shake(5);
+    player.fall();
+    _gameOverCountdown = 0.55;
   }
 
   void triggerGameOver() {

@@ -17,6 +17,10 @@ class DifficultyParams {
     required this.looseNumberDensity,
     required this.trackSpeed,
     required this.wallSequenceLength,
+    this.sweepChance = 0,
+    this.forcedSweepChance = 0,
+    this.cyclingGateChance = 0,
+    this.holeChance = 0,
   });
 
   factory DifficultyParams.forLevel(int level) {
@@ -51,10 +55,19 @@ class DifficultyParams {
         GateOperation.multiply: multiplyW,
         GateOperation.divide: divideW,
       },
-      hazardDensity: (0.18 + level * 0.025).clamp(0.18, 0.5),
+      // Steeper than before (was 0.18 + 0.025·level, capped 0.5, and speed
+      // 7 + 0.35·level capped at 14) — players found it too easy.
+      hazardDensity: (0.2 + level * 0.03).clamp(0.2, 0.55),
       looseNumberDensity: (0.20 + level * 0.02).clamp(0.20, 0.4),
-      trackSpeed: 7.0 + min(level * 0.35, 7.0),
+      trackSpeed: 7.5 + min(level * 0.45, 8.5),
       wallSequenceLength: min(3 + level ~/ 3, 9),
+      // New obstacles phase in one at a time: sliding saws from level 3
+      // (forcing you through them from level 7), cycling gates from 5,
+      // holes in the bridge from 8.
+      sweepChance: level < 3 ? 0 : (0.1 + (level - 3) * 0.015).clamp(0.0, 0.22),
+      forcedSweepChance: level < 7 ? 0 : (0.3 + (level - 7) * 0.04).clamp(0.0, 0.7),
+      cyclingGateChance: level < 5 ? 0 : (0.2 + (level - 5) * 0.03).clamp(0.0, 0.5),
+      holeChance: level < 8 ? 0 : (0.35 + (level - 8) * 0.03).clamp(0.0, 0.6),
     );
   }
 
@@ -91,4 +104,17 @@ class DifficultyParams {
   final double looseNumberDensity;
   final double trackSpeed;
   final int wallSequenceLength;
+
+  /// Chance a row is a sliding-saw row.
+  final double sweepChance;
+
+  /// Chance a sliding-saw row also blocks every lane outside the saw's
+  /// span, so the only way through is timing past the saw.
+  final double forcedSweepChance;
+
+  /// Chance each gate in a gate row cycles between options.
+  final double cyclingGateChance;
+
+  /// Chance a hazard row uses holes in the bridge instead of saws.
+  final double holeChance;
 }

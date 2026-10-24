@@ -86,6 +86,13 @@ class PlayerComponent extends PositionComponent with HasGameReference<NumberMast
     }
   }
 
+  /// Shrink and sink through a hole in the bridge.
+  void fall() {
+    _cancelActiveMoveEffect();
+    add(ScaleEffect.to(Vector2.all(0.15), EffectController(duration: 0.5, curve: Curves.easeIn)));
+    add(MoveByEffect(Vector2(0, size.y * 0.9), EffectController(duration: 0.5, curve: Curves.easeIn)));
+  }
+
   void pulse() {
     add(
       SequenceEffect([

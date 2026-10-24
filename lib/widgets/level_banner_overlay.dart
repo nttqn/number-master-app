@@ -10,6 +10,15 @@ class LevelBannerOverlay extends StatefulWidget {
   final int level;
   final VoidCallback onDone;
 
+  /// One-line heads-up on the level where each new obstacle first appears
+  /// (see DifficultyParams.forLevel for where they phase in).
+  static const Map<int, String> newObstacleHints = {
+    3: 'NEW: Sliding saws — time your pass!',
+    5: 'NEW: Gates that keep changing!',
+    7: 'Saws now block the way around',
+    8: 'NEW: Holes in the bridge — don\'t fall!',
+  };
+
   @override
   State<LevelBannerOverlay> createState() => _LevelBannerOverlayState();
 }
@@ -22,7 +31,9 @@ class _LevelBannerOverlayState extends State<LevelBannerOverlay> with SingleTick
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000));
+    // A bit longer when there's a hint to read.
+    final hasHint = LevelBannerOverlay.newObstacleHints.containsKey(widget.level);
+    _controller = AnimationController(vsync: this, duration: Duration(milliseconds: hasHint ? 2800 : 2000));
     _scale = TweenSequence<double>([
       TweenSequenceItem(
         tween: Tween(begin: 0.4, end: 1.15).chain(CurveTween(curve: Curves.easeOutBack)),
@@ -64,14 +75,33 @@ class _LevelBannerOverlayState extends State<LevelBannerOverlay> with SingleTick
             opacity: _opacity.value,
             child: Transform.scale(scale: _scale.value, child: child),
           ),
-          child: Text(
-            'LEVEL ${widget.level}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 56,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 2,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'LEVEL ${widget.level}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 56,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
+              if (LevelBannerOverlay.newObstacleHints[widget.level] case final hint?)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12, left: 24, right: 24),
+                  child: Text(
+                    hint,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.amberAccent,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ),

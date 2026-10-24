@@ -65,6 +65,34 @@ had 84M coins at level 11. `Economy.coinsForRun` is now
 × the stair multiplier. Roughly 400 coins for a level-1 clear at x5, ~3.3k at
 level 11 — in line with shop prices (skins 1k–15k).
 
+## Moving obstacles + harder curve (2026-10-24)
+
+Players found the track too easy and samey (everything static, one safe
+lane per row). Added, phasing in by level (`DifficultyParams.forLevel`,
+announced by `LevelBannerOverlay.newObstacleHints`):
+
+- **Sliding saws** (level 3+, `SawSweep` on `SpawnRow.sweep`,
+  `SweepSawComponent`): a saw eases back and forth over 2-3 lanes that hold
+  good gates; from level 7 the other lanes may be blocked, so timing is the
+  only way through. Kills only the lane it's over (±0.55) at resolve time.
+- **Cycling gates** (5+, `CyclingGateContent`, `CyclingGateComponent`):
+  switch option every 0.7s; always mix a growing and a shrinking option.
+- **Holes in the bridge** (8+, `HoleContent`, `HoleComponent`): 5 units
+  long, fatal for the whole time the player's lane is over it (including
+  sliding across mid lane-change); the player falls (`GameState.falling`,
+  track frozen) before game over.
+- Steeper hazard density and speed.
+
+Generator accounting for the new pieces: sweep lanes count as passable
+(some lane in the span is always clear). Cycling gates need **two worst
+cases** — the true floor (all options) drives per-row fairness and
+loose-number sizing, so a mistimed gate can never strand the player in a
+row of all-bigger numbers; the *timed* worst case (best option) drives the
+wall budget — otherwise level 10's walls all collapsed to 1. The best case
+became exponential (perfect timing on every ×), so the bonus stairs now use
+**geometric step costs** (`GeneratedLevel.stairCosts`, log-spaced from the
+worst-case leftover to 90% of the best) instead of one flat cost.
+
 To test the late-level flow in a browser, a temporary
 `--dart-define`-gated god mode (skip `triggerGameOver`, +60 start number)
 was added and removed again — a blind Playwright bot rarely survives to the

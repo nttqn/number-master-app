@@ -18,8 +18,9 @@ class GateComponent extends TrackEntity {
     required super.spawnDistance,
   }) : super(baseSize: 52); // shrunk for 5 narrower lanes (was 96 for 3)
 
-  final GateOperation op;
-  final int value;
+  /// Not final: [CyclingGateComponent] swaps these on a timer.
+  GateOperation op;
+  int value;
 
   @override
   void onResolve(PlayerComponent player) {
@@ -31,6 +32,13 @@ class GateComponent extends TrackEntity {
 
   Color get _color => op.isBeneficialColor ? AppPalette.friendlyNumber : AppPalette.enemyNumber;
 
+  /// The glass panel, in local coordinates.
+  Rect get panelRect {
+    final panelW = size.x * 1.15;
+    final panelH = size.y * 1.2;
+    return Rect.fromLTWH((size.x - panelW) / 2, groundLocalY - panelH, panelW, panelH);
+  }
+
   @override
   void render(Canvas canvas) {
     if (size.x < 4) return;
@@ -38,9 +46,9 @@ class GateComponent extends TrackEntity {
     final color = _color;
     paintShadow(canvas, widthFactor: 1.1);
 
-    final panelW = w * 1.15;
-    final panelH = size.y * 1.2;
-    final panel = Rect.fromLTWH((w - panelW) / 2, groundLocalY - panelH, panelW, panelH);
+    final panel = panelRect;
+    final panelW = panel.width;
+    final panelH = panel.height;
     final postW = w * 0.09;
 
     // Translucent glass with a diagonal sheen.

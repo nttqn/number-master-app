@@ -20,11 +20,14 @@ class HazardComponent extends TrackEntity {
 
   @override
   void onResolve(PlayerComponent player) {
-    if (lane == player.currentLane) {
+    if (hits(player.currentLane)) {
       game.triggerGameOver();
     }
     removeFromParent();
   }
+
+  /// Whether this saw kills a player in [playerLane] right now.
+  bool hits(int playerLane) => lane == playerLane;
 
   @override
   void render(Canvas canvas) {

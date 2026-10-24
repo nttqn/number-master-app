@@ -2,6 +2,7 @@ import '../models/lane.dart';
 import 'components/gate_component.dart';
 import 'components/hazard_component.dart';
 import 'components/loose_number_component.dart';
+import 'components/moving_obstacles.dart';
 import 'components/wall_component.dart';
 import 'number_master_game.dart';
 import 'spawner/spawn_row.dart';
@@ -65,7 +66,7 @@ class LevelRuntime {
       game.add(
         StairStepComponent(
           multiplier: _nextStair,
-          cost: generated.stairStepCost,
+          cost: generated.stairCosts[_nextStair - 2],
           spawnDistance: distance - traveled,
         ),
       );
@@ -96,7 +97,22 @@ class LevelRuntime {
           game.add(LooseNumberComponent(value: value, lane: lane, spawnDistance: entityDistance));
         case HazardContent():
           game.add(HazardComponent(lane: lane, spawnDistance: entityDistance));
+        case CyclingGateContent(:final options):
+          game.add(CyclingGateComponent(options: options, lane: lane, spawnDistance: entityDistance));
+        case HoleContent():
+          game.add(HoleComponent(lane: lane, spawnDistance: entityDistance));
       }
+    }
+    final sweep = row.sweep;
+    if (sweep != null) {
+      game.add(
+        SweepSawComponent(
+          fromLane: sweep.fromLane,
+          toLane: sweep.toLane,
+          period: sweep.period,
+          spawnDistance: entityDistance,
+        ),
+      );
     }
   }
 }
